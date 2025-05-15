@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Button } from "../ui/button";
 import { useToast } from "../../hooks/use-toast";
 import { Loader2, Upload, FileText } from "lucide-react";
@@ -12,6 +18,11 @@ interface PDFMetadataResult {
     info: Record<string, unknown>;
     metadata: Record<string, unknown>;
   };
+  text: {
+    totalPages: number;
+    content: string | string[];
+    annotations?: string[];
+  };
 }
 
 export function PDFDirectMetadata() {
@@ -20,14 +31,14 @@ export function PDFDirectMetadata() {
   const [metadata, setMetadata] = useState<PDFMetadataResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    
+
     if (!selectedFile) {
       return;
     }
-    
+
     // Check if file is a PDF
     if (selectedFile.type !== "application/pdf") {
       toast({
@@ -37,7 +48,7 @@ export function PDFDirectMetadata() {
       });
       return;
     }
-    
+
     // Check file size (max 10MB)
     if (selectedFile.size > 10 * 1024 * 1024) {
       toast({
@@ -47,12 +58,12 @@ export function PDFDirectMetadata() {
       });
       return;
     }
-    
+
     setFile(selectedFile);
     setMetadata(null);
     setError(null);
   };
-  
+
   const handleExtractMetadata = async () => {
     if (!file) {
       toast({
@@ -62,13 +73,13 @@ export function PDFDirectMetadata() {
       });
       return;
     }
-    
+
     setIsUploading(true);
     setError(null);
-    
+
     try {
       const response = await ApiService.extractPDFMetadata(file);
-      
+
       if (response.status === "success" && response.data) {
         setMetadata(response.data);
         toast({
@@ -79,7 +90,8 @@ export function PDFDirectMetadata() {
         throw new Error(response.error || "Failed to extract metadata");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
       setError(errorMessage);
       toast({
         variant: "destructive",
@@ -90,24 +102,28 @@ export function PDFDirectMetadata() {
       setIsUploading(false);
     }
   };
-  
+
   // Helper function to render metadata values
   const renderValue = (value: unknown): React.ReactNode => {
     if (value === null || value === undefined) {
       return <span className="text-muted-foreground italic">None</span>;
     }
-    
+
     if (typeof value === "object") {
-      return <pre className="text-xs overflow-auto max-h-24 bg-muted p-2 rounded">{JSON.stringify(value, null, 2)}</pre>;
+      return (
+        <pre className="text-xs overflow-auto max-h-24 bg-muted p-2 rounded">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      );
     }
-    
+
     if (typeof value === "boolean") {
       return value ? "Yes" : "No";
     }
-    
+
     return String(value);
   };
-  
+
   return (
     <div className="space-y-6">
       <Card>
@@ -150,13 +166,13 @@ export function PDFDirectMetadata() {
                 )}
               </Button>
             </div>
-            
+
             {file && (
               <div className="text-sm text-muted-foreground">
                 File size: {(file.size / 1024 / 1024).toFixed(2)} MB
               </div>
             )}
-            
+
             {error && (
               <div className="p-4 bg-destructive/10 text-destructive rounded-md">
                 {error}
@@ -165,50 +181,129 @@ export function PDFDirectMetadata() {
           </div>
         </CardContent>
       </Card>
-      
+
       {metadata && (
-        <Card>
-          <CardHeader>
-            <CardTitle>PDF Metadata</CardTitle>
-            <CardDescription>
-              Metadata for {metadata.filename} ({(metadata.size / 1024 / 1024).toFixed(2)} MB)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Document Info Section */}
-              <div>
-                <h3 className="text-lg font-medium mb-2">Document Info</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(metadata.metadata.info).map(([key, value]) => (
-                    <div key={key} className="space-y-1">
-                      <p className="text-sm font-medium text-muted-foreground">{key}</p>
-                      <div className="text-sm">{renderValue(value)}</div>
-                    </div>
-                  ))}
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>PDF Metadata</CardTitle>
+              <CardDescription>
+                Metadata for {metadata.filename} (
+                {(metadata.size / 1024 / 1024).toFixed(2)} MB)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Document Info Section */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Document Info</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(metadata.metadata.info).map(
+                      ([key, value]) => (
+                        <div key={key} className="space-y-1">
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {key}
+                          </p>
+                          <div className="text-sm">{renderValue(value)}</div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {/* Document Metadata Section */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">
+                    Document Metadata
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(metadata.metadata.metadata).map(
+                      ([key, value]) => (
+                        <div key={key} className="space-y-1">
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {key}
+                          </p>
+                          <div className="text-sm">{renderValue(value)}</div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  {Object.keys(metadata.metadata.metadata).length === 0 && (
+                    <p className="text-muted-foreground italic">
+                      No additional metadata available
+                    </p>
+                  )}
                 </div>
               </div>
-              
-              {/* Document Metadata Section */}
-              <div>
-                <h3 className="text-lg font-medium mb-2">Document Metadata</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(metadata.metadata.metadata).map(([key, value]) => (
-                    <div key={key} className="space-y-1">
-                      <p className="text-sm font-medium text-muted-foreground">{key}</p>
-                      <div className="text-sm">{renderValue(value)}</div>
-                    </div>
-                  ))}
-                </div>
-                {Object.keys(metadata.metadata.metadata).length === 0 && (
-                  <p className="text-muted-foreground italic">No additional metadata available</p>
+            </CardContent>
+          </Card>
+
+          {/* Document Text Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>PDF Text Content</CardTitle>
+              <CardDescription>
+                Extracted text from {metadata.filename} (
+                {metadata.text.totalPages} pages)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {typeof metadata.text.content === "string" ? (
+                  <div className="max-h-96 overflow-y-auto p-4 bg-muted/30 rounded-md text-sm whitespace-pre-wrap">
+                    {metadata.text.content}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {metadata.text.content.map((pageText, index) => (
+                      <div key={index} className="space-y-2">
+                        <h4 className="text-sm font-medium">
+                          Page {index + 1}
+                        </h4>
+                        <div className="max-h-60 overflow-y-auto p-4 bg-muted/30 rounded-md text-sm whitespace-pre-wrap">
+                          {pageText}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Annotations Section */}
+          {metadata.text.annotations &&
+            metadata.text.annotations.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>PDF Annotations</CardTitle>
+                  <CardDescription>
+                    Comments and annotations found in {metadata.filename}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Found {metadata.text.annotations.length} annotations in
+                      the document
+                    </p>
+                    <ul className="space-y-2">
+                      {metadata.text.annotations.map((annotation, index) => (
+                        <li
+                          key={index}
+                          className="p-3 bg-muted/30 rounded-md text-sm"
+                        >
+                          {JSON.stringify(annotation, null, 2)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+        </>
       )}
-      
+
       {!metadata && !isUploading && (
         <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed">
           <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

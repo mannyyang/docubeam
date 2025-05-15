@@ -165,7 +165,12 @@ export class ApiService {
     metadata: {
       info: Record<string, unknown>;
       metadata: Record<string, unknown>;
-    }
+    };
+    text: {
+      totalPages: number;
+      content: string | string[];
+      annotations?: string[];
+    };
   }>> {
     try {
       console.log(`Extracting metadata from file: ${file.name}`);

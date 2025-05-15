@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { extractTextFromPDF, formatSuccessResponse, formatErrorResponse, generateUUID, createDocumentPath, extractPDFMetadata } from "./utils";
+import { extractTextFromPDF, formatSuccessResponse, formatErrorResponse, generateUUID, createDocumentPath, extractPDFMetadata, extractPDFText } from "./utils";
 import { ChatService } from "./services/chat-service";
 import { API_ROUTES } from "./config";
 import { ChatRequest } from "./types";
@@ -432,13 +432,25 @@ app.post("/api/metadata/extract", async (c) => {
     // Get the file buffer
     const buffer = await file.arrayBuffer();
     
+    // Clone the buffer for each operation to avoid detached ArrayBuffer issues
+    const metadataBuffer = buffer.slice(0);
+    const textBuffer = buffer.slice(0);
+    
     // Extract metadata from the PDF
-    const pdfMetadata = await extractPDFMetadata(buffer);
+    const pdfMetadata = await extractPDFMetadata(metadataBuffer);
+    
+    // Extract text from the PDF
+    const pdfText = await extractPDFText(textBuffer, true);
     
     return c.json(formatSuccessResponse({
       filename: file.name,
       size: file.size,
-      metadata: pdfMetadata
+      metadata: pdfMetadata,
+      text: {
+        totalPages: pdfText.totalPages,
+        content: pdfText.text,
+        annotations: pdfText.annotations
+      }
     }));
   } catch (error: unknown) {
     console.error("Extract PDF metadata error:", error);

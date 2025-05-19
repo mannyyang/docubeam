@@ -1,12 +1,25 @@
 import { ArrowRight, MessageSquare } from "lucide-react";
 import { AuroraText } from "@/components/magicui/aurora-text";
 import { BorderBeam } from "@/components/magicui/border-beam";
+import { Particles } from "@/components/magicui/particles";
 import { Button } from "@/components/ui/button";
 import { AnimatedBeamMultipleOutputDemo } from "@/components/ui/pipeline";
 
 export function HeroSection() {
   return (
     <section id="hero" className="relative mx-auto mt-32 max-w-[80rem] px-6 text-center md:px-8">
+      {/* Particles background */}
+      <div className="fixed inset-0 -z-10" aria-hidden="true">
+        <Particles
+          className="h-full w-full"
+          quantity={150}
+          staticity={30}
+          color="#ffffff"
+          ease={50}
+          size={0.6}
+        />
+      </div>
+      
       {/* Small badge/pill with shimmer animation */}
       <div className="backdrop-filter-[12px] inline-flex h-7 items-center justify-between rounded-full border border-white/5 bg-white/10 px-3 text-xs text-white dark:text-white transition-all ease-in hover:cursor-pointer hover:bg-white/20 group gap-1 translate-y-[-1rem] animate-fade-in opacity-0">
         <p style={{ "--shimmer-width": "100px" } as React.CSSProperties} className="mx-auto max-w-md text-white/80 dark:text-white/80 animate-shimmer bg-clip-text bg-no-repeat [background-position:0_0] [background-size:var(--shimmer-width)_100%] [transition:background-position_1s_cubic-bezier(.6,.6,0,1)_infinite] bg-gradient-to-r from-neutral-100 via-white/80 via-50% to-neutral-100 dark:from-neutral-900 dark:via-white/80 dark:to-neutral-900 inline-flex items-center justify-center">
@@ -45,7 +58,7 @@ export function HeroSection() {
       </Button>
 
       {/* Animated Beam with Border */}
-      <div className="relative mt-[8rem] animate-fade-up opacity-0 [--animation-delay:400ms] [perspective:2000px] after:absolute after:inset-0 after:z-50 after:[background:linear-gradient(to_top,#000_30%,transparent)]">
+      <div className="relative mt-[8rem] animate-fade-up opacity-0 [--animation-delay:400ms] [perspective:2000px] after:absolute after:inset-0 after:z-50 after:[background:linear-gradient(to_top,rgba(0,0,0,0.8)_5%,transparent)]">
         <div className="rounded-xl border border-white/10 bg-transparent before:absolute before:bottom-1/2 before:left-0 before:top-0 before:h-full before:w-full before:opacity-0 before:[filter:blur(180px)] before:[background-image:linear-gradient(to_bottom,var(--color-one),var(--color-one),transparent_40%)] before:animate-image-glow">
           <BorderBeam 
             size={200}

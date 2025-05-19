@@ -70,6 +70,22 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "beam-move": "beam-move 3s ease-in-out infinite",
+      },
+      keyframes: {
+        "beam-move": {
+          "0%": { 
+            "stroke-dashoffset": "100%",
+            "opacity": "0.2"
+          },
+          "50%": { 
+            "opacity": "1"
+          },
+          "100%": { 
+            "stroke-dashoffset": "0%",
+            "opacity": "0.2"
+          },
+        },
       },
     },
   },

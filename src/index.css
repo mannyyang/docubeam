@@ -1,6 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 2px rgba(255, 170, 64, 0.3));
+  }
+  50% {
+    opacity: 1;
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 8px rgba(156, 64, 255, 0.6));
+  }
+  100% {
+    opacity: 0.3;
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 2px rgba(255, 170, 64, 0.3));
+  }
+}
  
 @layer base {
   :root {
@@ -74,5 +92,11 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    letter-spacing: -0.025em;
   }
 }

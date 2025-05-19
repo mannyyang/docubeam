@@ -1,7 +1,7 @@
-import { LandingLayout } from "../components/layout/landing-layout";
-import { PDFUpload } from "../components/pdf/pdf-upload";
-import { useToast } from "../hooks/use-toast";
-import { ApiService } from "../services/api-service";
+import { LandingLayout } from "@/components/layout/landing-layout";
+import { PDFUpload } from "@/components/pdf/pdf-upload";
+import { useToast } from "@/hooks/use-toast";
+import { ApiService } from "@/services/api-service";
 import {
   FileText,
   MessageSquare,
@@ -9,12 +9,16 @@ import {
   Shield,
   ArrowRight,
 } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState, useRef } from "react";
+import { AnimatedBeamDemo } from "@/components/ui/pipeline";
 
 export function HomePage() {
   const { toast } = useToast();
   const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const fromRef = useRef<HTMLButtonElement>(null);
+  const toRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Trigger animation after component mounts
@@ -57,11 +61,11 @@ export function HomePage() {
   return (
     <LandingLayout>
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden" ref={containerRef}>
         {/* Background with subtle gradient and animated dots */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black to-gray-900">
+        <div className="absolute inset-0 bg-black">
           <div
-            className="absolute inset-0 opacity-20"
+            className="absolute inset-0 opacity-10"
             style={{
               backgroundImage: "radial-gradient(white 1px, transparent 0)",
               backgroundSize: "40px 40px",
@@ -73,7 +77,7 @@ export function HomePage() {
         <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-32">
           <div className="text-center mb-12">
             {/* Small badge/pill */}
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm mb-6 border border-white/20">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-900 backdrop-blur-sm mb-6 border border-zinc-800">
               <span className="text-xs font-medium text-white/80">
                 Introducing PDF Comment Extraction
               </span>
@@ -81,17 +85,12 @@ export function HomePage() {
             </div>
 
             {/* Main heading with animation */}
-            <h1
-              className={`text-5xl md:text-7xl font-bold tracking-tight mb-6 transition-all duration-1000 ease-out ${
+            <h1 className={`bg-gradient-to-br dark:from-white from-black from-30% dark:to-white/40 to-black/40 py-6 text-5xl font-medium leading-none tracking-tighter text-white text-balance sm:text-6xl md:text-7xl lg:text-8xl translate-y-[-1rem] transition-all duration-1000 ease-out ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-10"
-              }`}
-            >
-              Stop Chasing Comments,
-              <div className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                Get Actionable Insights
-              </div>
+              }`}>
+              Stop Chasing Comments,<br className="hidden md:block"/> Get Actionable Insights
             </h1>
 
             {/* Subheading with animation */}
@@ -114,24 +113,31 @@ export function HomePage() {
               }`}
             >
               <Button
-                className="px-8 py-6 text-lg font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-md shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out"
+                ref={fromRef}
+                className="px-8 py-6 text-lg font-medium bg-white text-black rounded-md shadow-lg hover:shadow-xl hover:bg-white/90 transition-all duration-300 ease-in-out"
                 onClick={() =>
                   document
                     .getElementById("upload-section")
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
               >
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                Get Started for free <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
+
+            {/* Target element for the beam */}
+            <div ref={toRef} className="h-4 w-4 mx-auto mt-24 opacity-0"></div>
+
+            {/* Animated Beam */}
+            {isVisible && <AnimatedBeamDemo />}
           </div>
         </div>
       </div>
 
       {/* Problem Statement */}
-      <div className="bg-gray-900 py-20">
+      <div className="bg-black py-20">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-xl">
+          <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 shadow-xl">
             <h2 className="text-2xl font-bold mb-6 text-white">
               The Bluebeam Challenge
             </h2>
@@ -221,10 +227,7 @@ export function HomePage() {
       </div>
 
       {/* CTA Section */}
-      <div
-        id="upload-section"
-        className="bg-gradient-to-b from-gray-900 to-black py-20"
-      >
+      <div id="upload-section" className="bg-black py-20">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold mb-4 text-white">
             Ready to streamline your document review process?
@@ -234,7 +237,7 @@ export function HomePage() {
             your review process more efficiently.
           </p>
 
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-xl">
+          <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 shadow-xl">
             <PDFUpload
               onUploadComplete={handleUploadComplete}
               darkMode={true}

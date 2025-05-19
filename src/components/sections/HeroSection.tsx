@@ -1,7 +1,9 @@
 import { useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageSquare } from "lucide-react";
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text";
+import { AuroraText } from "@/components/magicui/aurora-text";
 import { Button } from "@/components/ui/button";
-import { AnimatedBeamDemo } from "@/components/ui/pipeline";
+import { AnimatedBeamMultipleOutputDemo } from "@/components/ui/pipeline";
 import { Particles } from "@/components/magicui/particles";
 import { BorderBeam } from "@/components/magicui/border-beam";
 
@@ -12,7 +14,6 @@ interface HeroSectionProps {
 export function HeroSection({ isVisible }: HeroSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fromRef = useRef<HTMLButtonElement>(null);
-  const toRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="relative overflow-hidden" ref={containerRef}>
@@ -32,19 +33,29 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
         <div className="text-center mb-12">
           {/* Small badge/pill */}
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-900 backdrop-blur-sm mb-6 border border-zinc-800">
-            <span className="text-xs font-medium text-white/80">
+            <MessageSquare className="h-4 w-4 mr-2 text-green-500" />
+            <AnimatedShinyText className="text-xs font-medium text-white/80">
               Introducing PDF Comment Extraction
-            </span>
+            </AnimatedShinyText>
             <ArrowRight className="h-3 w-3 ml-2 text-white/60" />
           </div>
 
           {/* Main heading with animation */}
-          <h1 className={`bg-gradient-to-br dark:from-white from-black from-30% dark:to-white/40 to-black/40 py-6 text-5xl font-medium leading-none tracking-tighter text-white text-balance sm:text-6xl md:text-7xl lg:text-8xl translate-y-[-1rem] transition-all duration-1000 ease-out ${
+          <h1 className={`py-6 text-5xl font-medium leading-none tracking-tighter text-white text-balance sm:text-6xl md:text-7xl lg:text-8xl translate-y-[-1rem] transition-all duration-1000 ease-out ${
               isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
             }`}>
-            Stop Chasing Comments,<br className="hidden md:block"/> Get Actionable Insights
+            <span className="text-white">
+              Stop Chasing Comments,
+            </span>
+            <br className="hidden md:block"/>
+            <AuroraText 
+              colors={["#FF0080", "#7928CA", "#0070F3", "#38bdf8", "#FF4D4D"]}
+              speed={0.7}
+            >
+              Get Actionable Insights
+            </AuroraText>
           </h1>
 
           {/* Subheading with animation */}
@@ -79,9 +90,6 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
             </Button>
           </div>
 
-          {/* Target element for the beam */}
-          {/* <div ref={toRef} className="h-4 w-4 mx-auto mt-24 opacity-0"></div> */}
-
           {/* Animated Beam with Border */}
           {isVisible && (
             <div className="relative mt-12">
@@ -95,7 +103,7 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
                   className="absolute inset-0 rounded-xl"
                 />
                 <div className="relative z-10">
-                  <AnimatedBeamDemo />
+                  <AnimatedBeamMultipleOutputDemo />
                 </div>
               </div>
             </div>

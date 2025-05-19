@@ -1,7 +1,6 @@
 import { LandingLayout } from "@/components/layout/landing-layout";
 import { useToast } from "@/hooks/use-toast";
 import { ApiService } from "@/services/api-service";
-import { useState, useEffect } from "react";
 import { 
   HeroSection, 
   ProblemSection, 
@@ -11,12 +10,6 @@ import {
 
 export function HomePage() {
   const { toast } = useToast();
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    // Trigger animation after component mounts
-    setIsVisible(true);
-  }, []);
 
   const handleUploadComplete = async (file: File) => {
     try {
@@ -53,7 +46,7 @@ export function HomePage() {
 
   return (
     <LandingLayout>
-      <HeroSection isVisible={isVisible} />
+      <HeroSection />
       <ProblemSection />
       <ValuePropositionSection />
       <CtaSection onUploadComplete={handleUploadComplete} />

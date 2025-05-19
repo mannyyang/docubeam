@@ -22,13 +22,13 @@ const Circle = forwardRef<
       <div
         ref={ref}
         className={cn(
-          "z-10 flex size-16 items-center justify-center rounded-full border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+          "z-10 flex size-16 items-center justify-center rounded-full border-2 border-border bg-transparent p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
           className
         )}
       >
         {children}
       </div>
-      {label && <span className="text-xs text-white font-medium">{label}</span>}
+      {label && <span className="text-xs text-white/80 font-medium">{label}</span>}
     </div>
   );
 });
@@ -51,7 +51,7 @@ export function AnimatedBeamMultipleOutputDemo({
   return (
     <div
       className={cn(
-        "relative flex h-[500px] w-full items-center justify-center overflow-hidden p-10",
+        "relative flex h-[500px] w-full items-center justify-center overflow-hidden p-10 bg-transparent",
         className,
       )}
       ref={containerRef}

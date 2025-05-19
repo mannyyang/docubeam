@@ -71,6 +71,8 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "beam-move": "beam-move 3s ease-in-out infinite",
+        "border-beam": "border-beam calc(var(--duration) * 1s) infinite linear",
+        "fade-up": "fade-up 0.5s ease-out forwards",
       },
       keyframes: {
         "beam-move": {
@@ -85,6 +87,21 @@ module.exports = {
             "stroke-dashoffset": "0%",
             "opacity": "0.2"
           },
+        },
+        "border-beam": {
+          "100%": {
+            "offset-distance": "100%"
+          }
+        },
+        "fade-up": {
+          "0%": {
+            "opacity": "0",
+            "transform": "translateY(20px)"
+          },
+          "100%": {
+            "opacity": "1",
+            "transform": "translateY(0)"
+          }
         },
       },
     },

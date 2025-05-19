@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedBeamDemo } from "@/components/ui/pipeline";
 import { Particles } from "@/components/magicui/particles";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 interface HeroSectionProps {
   isVisible: boolean;
@@ -79,10 +80,26 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
           </div>
 
           {/* Target element for the beam */}
-          <div ref={toRef} className="h-4 w-4 mx-auto mt-24 opacity-0"></div>
+          {/* <div ref={toRef} className="h-4 w-4 mx-auto mt-24 opacity-0"></div> */}
 
-          {/* Animated Beam */}
-          {isVisible && <AnimatedBeamDemo />}
+          {/* Animated Beam with Border */}
+          {isVisible && (
+            <div className="relative mt-12">
+              <div className="relative rounded-xl border border-white/10 overflow-hidden">
+                <BorderBeam 
+                  size={200}
+                  duration={12}
+                  colorFrom="#ffaa40"
+                  colorTo="#9c40ff"
+                  delay={-11}
+                  className="absolute inset-0 rounded-xl"
+                />
+                <div className="relative z-10">
+                  <AnimatedBeamDemo />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

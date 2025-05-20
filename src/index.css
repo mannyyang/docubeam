@@ -57,13 +57,13 @@
 
 @keyframes image-glow {
   0% {
-    opacity: 1;
+    opacity: .45;
   }
   50% {
-    opacity: 0.75;
+    opacity: 0.35;
   }
   100% {
-    opacity: 1;
+    opacity: .45;
   }
 }
 

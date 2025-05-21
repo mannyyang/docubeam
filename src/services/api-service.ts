@@ -1,10 +1,41 @@
 import { API_ENDPOINTS } from "../config/app-config";
-import { APIResponse, UploadResponse, ChatResponse, PDFDocument } from "../types";
+import { APIResponse, UploadResponse, ChatResponse, PDFDocument, WaitlistResponse } from "../types";
 
 /**
  * Service for handling API calls to the backend
  */
 export class ApiService {
+  /**
+   * Join the waitlist with an email
+   */
+  static async joinWaitlist(email: string): Promise<APIResponse<WaitlistResponse>> {
+    try {
+      console.log(`Joining waitlist with email: ${email}`);
+      
+      const response = await fetch(API_ENDPOINTS.WAITLIST.JOIN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed with status: ${response.status}`);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Waitlist submission error:', error);
+      return {
+        status: "error",
+        error: error instanceof Error ? error.message : "Failed to join waitlist",
+      };
+    }
+  }
   /**
    * Upload a PDF document
    */

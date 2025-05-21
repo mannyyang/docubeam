@@ -13,6 +13,9 @@ export const API_ENDPOINTS = {
     GET_CONVERSATIONS: "/api/chat/conversations",
     GET_MESSAGES: "/api/chat/messages/:conversationId",
   },
+  WAITLIST: {
+    JOIN: "/api/waitlist",
+  },
 };
 
 // File upload constraints

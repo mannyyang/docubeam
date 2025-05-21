@@ -1,5 +1,6 @@
 import { LandingLayout } from "@/components/layout/landing-layout";
 import { useToast } from "@/hooks/use-toast";
+import { ApiService } from "@/services/api-service";
 import { 
   HeroSection, 
   ProblemSection, 
@@ -13,8 +14,13 @@ export function HomePage() {
 
   const handleJoinWaitlist = async (email: string) => {
     try {
-      // Here you would typically call an API to add the email to your waitlist
-      // For now, we'll just show a success toast
+      // Call the API service to join the waitlist
+      const response = await ApiService.joinWaitlist(email);
+      
+      if (response.status === "error") {
+        throw new Error(response.error || "Failed to join waitlist");
+      }
+      
       toast({
         title: "Success!",
         description: `${email} has been added to our waitlist. We'll notify you when we launch!`,
@@ -33,7 +39,7 @@ export function HomePage() {
 
   return (
     <LandingLayout>
-      <HeroSection />
+      <HeroSection onJoinWaitlist={handleJoinWaitlist} />
       <ProblemSection />
       <ValuePropositionSection />
       <HowItWorksSection />

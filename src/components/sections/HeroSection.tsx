@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimatedBeamMultipleOutputDemo } from "@/components/ui/pipeline";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onJoinWaitlist: (email: string) => Promise<void>;
+}
+
+export function HeroSection({ onJoinWaitlist }: HeroSectionProps) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,38 +22,10 @@ export function HeroSection() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed with status: ${response.status}`);
-      }
-      
-      await response.json();
-      
-      // Show success toast
-      toast({
-        title: "Success!",
-        description: "You've been added to the Docubeam waitlist.",
-        variant: "default",
-      });
-      
+      await onJoinWaitlist(email);
       setEmail("");
     } catch (error) {
       console.error('Waitlist submission error:', error);
-      
-      // Show error toast
-      toast({
-        title: "Something went wrong",
-        description: "Failed to join the waitlist. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }

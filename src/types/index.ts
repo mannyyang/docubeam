@@ -40,3 +40,9 @@ export interface ChatResponse {
   message: ChatMessage;
   documentId: string;
 }
+
+// Waitlist response type
+export interface WaitlistResponse {
+  success: boolean;
+  message: string;
+}

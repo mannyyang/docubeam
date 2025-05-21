@@ -30,7 +30,7 @@ export const BorderBeam: React.FC<BorderBeamProps> = ({
   style,
   reverse = false,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  initialOffset = 0,
+  // initialOffset = 0,
   children,
 }) => {
   return (

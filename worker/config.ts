@@ -4,13 +4,6 @@
 
 // API routes
 export const API_ROUTES = {
-  // Authentication endpoints
-  AUTH: {
-    LOGIN: "/api/auth/login",
-    REGISTER: "/api/auth/register",
-    REFRESH: "/api/auth/refresh",
-  },
-  
   // Document endpoints
   DOCUMENTS: {
     BASE: "/api/documents",
@@ -58,20 +51,8 @@ export const AI_CONFIG = {
   },
 };
 
-// JWT configuration
-export const JWT_CONFIG = {
-  EXPIRES_IN: "1d", // 1 day
-  REFRESH_EXPIRES_IN: "7d", // 7 days
-};
-
 // Error messages
 export const ERROR_MESSAGES = {
-  AUTHENTICATION: {
-    INVALID_CREDENTIALS: "Invalid email or password",
-    UNAUTHORIZED: "Unauthorized access",
-    TOKEN_EXPIRED: "Token has expired",
-    REGISTRATION_FAILED: "Failed to register user",
-  },
   DOCUMENTS: {
     UPLOAD_FAILED: "Failed to upload document",
     NOT_FOUND: "Document not found",

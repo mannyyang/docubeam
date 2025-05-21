@@ -7,7 +7,6 @@ import healthRoutes from "./routes/health-routes";
 import documentRoutes from "./routes/document-routes";
 import chatRoutes from "./routes/chat-routes";
 import metadataRoutes from "./routes/metadata-routes";
-import authRoutes from "./routes/auth-routes";
 import { waitlistRouter } from "./routes/waitlist-routes";
 
 // Create a new Hono app
@@ -22,7 +21,6 @@ app.route("/", healthRoutes);
 app.route("/", documentRoutes);
 app.route("/", chatRoutes);
 app.route("/", metadataRoutes);
-app.route("/", authRoutes);
 app.route("/api/waitlist", waitlistRouter);
 
 // Export the Hono app as the default export

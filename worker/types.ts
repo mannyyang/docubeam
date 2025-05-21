@@ -14,30 +14,6 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
-
-export interface UserRegistration extends UserCredentials {
-  name: string;
-}
-
-// Authentication types
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export interface JWTPayload {
-  sub: string; // User ID
-  email: string;
-  name: string;
-  tenantId: string;
-  iat: number; // Issued at
-  exp: number; // Expiration time
-}
 
 // Document types
 export interface PDFDocument {
@@ -166,11 +142,4 @@ export interface OCRPage {
 // Hono context extensions
 export interface AppBindings {
   env: Env;
-}
-
-export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  name: string;
-  tenantId: string;
 }

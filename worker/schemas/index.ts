@@ -13,24 +13,6 @@ export const waitlistResponseSchema = z.object({
 });
 
 /**
- * Authentication schemas
- */
-export const loginSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-export const registerSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-});
-
-export const refreshTokenSchema = z.object({
-  refreshToken: z.string(),
-});
-
-/**
  * Document schemas
  */
 export const uploadDocumentSchema = z.object({
@@ -71,13 +53,6 @@ export const apiResponseSchema = z.object({
   error: z.string().optional(),
 });
 
-export const authResponseSchema = apiResponseSchema.extend({
-  data: z.object({
-    accessToken: z.string(),
-    refreshToken: z.string(),
-    expiresIn: z.number(),
-  }).optional(),
-});
 
 export const documentResponseSchema = apiResponseSchema.extend({
   data: z.object({

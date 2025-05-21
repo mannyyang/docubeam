@@ -1,5 +1,3 @@
-import { SignJWT } from "jose";
-import { AuthTokens, JWTPayload } from "../types";
 import {
   getMeta,
   extractText,
@@ -23,44 +21,6 @@ export function generateUUID(): string {
   return crypto.randomUUID();
 }
 
-/**
- * Generate JWT tokens for authentication
- * @param payload The JWT payload
- * @param secret The JWT secret
- * @returns Access and refresh tokens
- */
-export async function generateTokens(
-  payload: Omit<JWTPayload, "iat" | "exp">,
-  secret: string
-): Promise<AuthTokens> {
-  const now = Math.floor(Date.now() / 1000);
-  const expiresIn = 60 * 60 * 24; // 1 day in seconds
-  const refreshExpiresIn = 60 * 60 * 24 * 7; // 7 days in seconds
-
-  // Create the access token
-  const accessToken = await new SignJWT({
-    ...payload,
-    iat: now,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(now + expiresIn)
-    .sign(new TextEncoder().encode(secret));
-
-  // Create the refresh token
-  const refreshToken = await new SignJWT({
-    ...payload,
-    iat: now,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(now + refreshExpiresIn)
-    .sign(new TextEncoder().encode(secret));
-
-  return {
-    accessToken,
-    refreshToken,
-    expiresIn,
-  };
-}
 
 /**
  * Create a folder path for a tenant's document

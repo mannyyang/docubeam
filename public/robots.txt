@@ -1,0 +1,9 @@
+# Allow all web crawlers to access all content
+User-agent: *
+Allow: /
+
+# Disallow crawling of metadata test page
+Disallow: /metadata-test
+
+# Sitemap location (to be created)
+Sitemap: https://docubeam.websyte.ai/sitemap.xml

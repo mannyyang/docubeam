@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home Page -->
+  <url>
+    <loc>https://docubeam.websyte.ai/</loc>
+    <lastmod>2025-05-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Documents Page -->
+  <!-- <url>
+    <loc>https://docubeam.websyte.ai/documents</loc>
+    <lastmod>2025-05-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+   -->
+  <!-- Chat Page -->
+  <!-- <url>
+    <loc>https://docubeam.websyte.ai/chat</loc>
+    <lastmod>2025-05-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url> -->
+  
+  <!-- Metadata Extract Page -->
+  <!-- <url>
+    <loc>https://docubeam.websyte.ai/metadata-extract</loc>
+    <lastmod>2025-05-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+   -->
+  <!-- Note: metadata-test page is excluded as it's marked noIndex in the SEO config -->
+</urlset>

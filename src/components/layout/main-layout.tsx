@@ -13,7 +13,10 @@ export function MainLayout({ children }: MainLayoutProps) {
       <aside className="hidden w-64 border-r bg-muted/40 p-6 md:block">
         <div className="flex flex-col h-full">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold">PDF Chat</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <img src="/docubeam-logo-sm.png" alt="Docubeam Logo" className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">Docubeam</h1>
+            </div>
             <p className="text-sm text-muted-foreground">
               Chat with your PDF documents
             </p>
@@ -71,7 +74,10 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Mobile Header */}
       <div className="flex flex-col flex-1">
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6 md:hidden">
-          <h1 className="text-xl font-bold">PDF Chat</h1>
+          <div className="flex items-center gap-2">
+            <img src="/docubeam-logo-sm.png" alt="Docubeam Logo" className="h-6 w-6" />
+            <h1 className="text-xl font-bold">Docubeam</h1>
+          </div>
         </header>
         
         {/* Main Content */}

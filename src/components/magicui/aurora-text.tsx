@@ -18,7 +18,7 @@ export function AuroraText({
 }: AuroraTextProps) {
   return (
     <motion.div
-      className={cn("inline-block", className)}
+      className={cn("block", className)}
       animate={{
         backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
       }}

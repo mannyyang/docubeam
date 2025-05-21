@@ -1,45 +1,32 @@
 import { LandingLayout } from "@/components/layout/landing-layout";
 import { useToast } from "@/hooks/use-toast";
-import { ApiService } from "@/services/api-service";
 import { 
   HeroSection, 
   ProblemSection, 
-  ValuePropositionSection, 
+  ValuePropositionSection,
+  HowItWorksSection,
   CtaSection 
 } from "@/components/sections";
 
 export function HomePage() {
   const { toast } = useToast();
 
-  const handleUploadComplete = async (file: File) => {
+  const handleJoinWaitlist = async (email: string) => {
     try {
-      // Upload the document
-      const result = await ApiService.uploadDocument(file);
-
-      if (result.status === "success" && result.data) {
-        toast({
-          title: "Document ready",
-          description: `${file.name} is now ready for chat.`,
-        });
-
-        // Navigate to chat page with the document ID
-        window.history.pushState(
-          {},
-          "",
-          `/chat?documentId=${result.data.documentId}`
-        );
-        window.dispatchEvent(new PopStateEvent("popstate"));
-      } else {
-        throw new Error(result.error || "Upload failed");
-      }
+      // Here you would typically call an API to add the email to your waitlist
+      // For now, we'll just show a success toast
+      toast({
+        title: "Success!",
+        description: `${email} has been added to our waitlist. We'll notify you when we launch!`,
+      });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Upload failed",
+        title: "Failed to join waitlist",
         description:
           error instanceof Error
             ? error.message
-            : "Failed to process document. Please try again.",
+            : "Failed to join waitlist. Please try again.",
       });
     }
   };
@@ -49,7 +36,8 @@ export function HomePage() {
       <HeroSection />
       <ProblemSection />
       <ValuePropositionSection />
-      <CtaSection onUploadComplete={handleUploadComplete} />
+      <HowItWorksSection />
+      <CtaSection onJoinWaitlist={handleJoinWaitlist} />
     </LandingLayout>
   );
 }

@@ -22,13 +22,13 @@ const Circle = forwardRef<
       <div
         ref={ref}
         className={cn(
-          "z-10 flex size-16 items-center justify-center rounded-full border-2 border-white/20 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+          "z-10 flex size-12 sm:size-16 items-center justify-center rounded-full border-2 border-white/20 bg-white p-2 sm:p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
           className
         )}
       >
         {children}
       </div>
-      {label && <span className="text-xs text-white/80 font-medium">{label}</span>}
+      {label && <span className="text-[10px] sm:text-xs text-white/80 font-medium">{label}</span>}
     </div>
   );
 });
@@ -51,34 +51,34 @@ export function AnimatedBeamMultipleOutputDemo({
   return (
     <div
       className={cn(
-        "relative flex h-[500px] w-full items-center justify-center overflow-hidden p-10 bg-transparent",
+        "relative flex h-[400px] sm:h-[500px] w-full items-center justify-center overflow-x-auto overflow-y-hidden p-4 sm:p-10 bg-transparent",
         className,
       )}
       ref={containerRef}
     >
-      <div className="flex size-full max-w-xl flex-row items-stretch justify-between gap-16">
+      <div className="flex min-w-[300px] sm:min-w-[600px] size-full max-w-xl flex-row items-stretch justify-between gap-4 sm:gap-16">
         <div className="flex flex-col justify-center gap-4">
           <Circle ref={div1Ref} label="PDF Document">
-            <FileText className="h-8 w-8 text-blue-600" />
+            <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-blue-600" />
           </Circle>
           <Circle ref={div2Ref} label="PDF Comments">
-            <MessageSquare className="h-8 w-8 text-green-600" />
+            <MessageSquare className="h-5 w-5 sm:h-8 sm:w-8 text-green-600" />
           </Circle>
           <Circle ref={div3Ref} label="PDF Annotations">
-            <Highlighter className="h-8 w-8 text-yellow-600" />
+            <Highlighter className="h-5 w-5 sm:h-8 sm:w-8 text-yellow-600" />
           </Circle>
         </div>
         <div className="flex flex-col justify-center">
-          <Circle ref={div4Ref} className="size-20" label="Data Store">
-            <Database className="h-10 w-10 text-indigo-600" />
+          <Circle ref={div4Ref} className="size-14 sm:size-20" label="Data Store">
+            <Database className="h-6 w-6 sm:h-10 sm:w-10 text-indigo-600" />
           </Circle>
         </div>
         <div className="flex flex-col justify-center gap-4">
           <Circle ref={div5Ref} label="Chat Interface">
-            <MessageCircle className="h-8 w-8 text-purple-600" />
+            <MessageCircle className="h-5 w-5 sm:h-8 sm:w-8 text-purple-600" />
           </Circle>
           <Circle ref={div6Ref} label="Insights Dashboard">
-            <BarChart3 className="h-8 w-8 text-red-600" />
+            <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-red-600" />
           </Circle>
         </div>
       </div>

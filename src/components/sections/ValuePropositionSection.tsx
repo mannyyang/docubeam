@@ -5,7 +5,7 @@ export function ValuePropositionSection() {
   return (
     <div className="bg-black py-20">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-white">
+        <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-white">
           Our Solution
         </h2>
 

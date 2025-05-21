@@ -1,26 +1,42 @@
-import { PDFUpload } from "@/components/pdf/pdf-upload";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface CtaSectionProps {
-  onUploadComplete: (file: File) => Promise<void>;
+  onJoinWaitlist?: (email: string) => Promise<void>;
 }
 
-export function CtaSection({ onUploadComplete }: CtaSectionProps) {
+export function CtaSection({ onJoinWaitlist }: CtaSectionProps) {
+  const [email, setEmail] = useState("");
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email && onJoinWaitlist) {
+      await onJoinWaitlist(email);
+      setEmail("");
+    }
+  };
   return (
-    <div id="upload-section" className="bg-black py-20">
+    <div id="waitlist-section" className="bg-black pt-20 pb-32">
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold mb-4 text-white">
-          Ready to streamline your document review process?
+        <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white">
+          Be the first to experience our PDF review solution
         </h2>
-        <p className="text-white/70 mb-12 text-lg">
-          Upload your Bluebeam PDF to extract comments and start organizing
-          your review process more efficiently.
-        </p>
 
         <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 shadow-xl">
-          <PDFUpload
-            onUploadComplete={onUploadComplete}
-            darkMode={true}
-          />
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="flex-grow bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400"
+            />
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+              Join Waitlist
+            </Button>
+          </form>
         </div>
       </div>
     </div>

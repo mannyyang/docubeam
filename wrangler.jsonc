@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "pdf-chat-websyte-ai",
+  "name": "docubeam",
   "main": "worker/index.ts",
   "compatibility_date": "2025-04-03",
   "assets": {
@@ -28,8 +28,8 @@
   "r2_buckets": [
     {
       "binding": "PDF_BUCKET",
-      "bucket_name": "websyte-ai-pdf-chat",
-      "preview_bucket_name": "websyte-ai-pdf-chat-dev"
+      "bucket_name": "docubeam",
+      "preview_bucket_name": "docubeam-dev"
     }
   ],
   "ai": {

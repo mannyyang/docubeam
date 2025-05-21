@@ -3,6 +3,7 @@ import { AuroraText } from "@/components/magicui/aurora-text";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { Particles } from "@/components/magicui/particles";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AnimatedBeamMultipleOutputDemo } from "@/components/ui/pipeline";
 
 export function HeroSection() {
@@ -23,8 +24,7 @@ export function HeroSection() {
         {/* Small badge/pill with shimmer animation */}
         <div className="backdrop-filter-[12px] inline-flex h-7 items-center justify-between rounded-full border border-white/5 bg-white/10 px-3 text-xs text-white dark:text-white transition-all ease-in hover:cursor-pointer hover:bg-white/20 group gap-1 translate-y-[-1rem] animate-fade-in opacity-0">
           <p
-            style={{ "--shimmer-width": "100px" } as React.CSSProperties}
-            className="mx-auto max-w-md text-white/80 dark:text-white/80 animate-shimmer bg-clip-text bg-no-repeat [background-position:0_0] [background-size:var(--shimmer-width)_100%] [transition:background-position_1s_cubic-bezier(.6,.6,0,1)_infinite] bg-gradient-to-r from-neutral-100 via-white/80 via-50% to-neutral-100 dark:from-neutral-900 dark:via-white/80 dark:to-neutral-900 inline-flex items-center justify-center"
+            className="mx-auto max-w-md text-white/80 dark:text-white/80 inline-flex items-center justify-center"
           >
             <MessageSquare className="h-4 w-4 mr-2 text-green-500" />
             <span>Introducing PDF Comment Extraction</span>
@@ -49,18 +49,23 @@ export function HeroSection() {
           Prioritize key discussions and centrally organize all data
         </p>
 
-        {/* CTA button with animation */}
-        <Button
-          className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary shadow hover:bg-primary/90 h-9 px-4 py-2 translate-y-[-1rem] animate-fade-in gap-1 rounded-lg text-white dark:text-black opacity-0 ease-in-out [--animation-delay:600ms]"
-          onClick={() =>
-            document
-              .getElementById("upload-section")
-              ?.scrollIntoView({ behavior: "smooth" })
-          }
-        >
-          <span>Get Started for free</span>
-          <ArrowRight className="ml-1 size-4 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
-        </Button>
+        {/* CTA with email input for waiting list */}
+        <form className="flex flex-col sm:flex-row items-center justify-center gap-3 translate-y-[-1rem] animate-fade-in opacity-0 [--animation-delay:600ms]">
+          <div className="relative w-full max-w-xs">
+            <Input 
+              type="email" 
+              placeholder="Enter your email" 
+              className="h-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus-visible:ring-primary"
+            />
+          </div>
+          <Button
+            className="h-10 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary shadow hover:bg-primary/90 px-4 gap-1 rounded-md text-white dark:text-black"
+            type="submit"
+          >
+            <span>Join Waiting List</span>
+            <ArrowRight className="ml-1 size-4 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
+          </Button>
+        </form>
 
         {/* Animated Beam with Border */}
         <div className="relative mt-[8rem] animate-fade-up opacity-0 [--animation-delay:400ms] [perspective:2000px]">

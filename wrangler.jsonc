@@ -34,7 +34,14 @@
   ],
   "ai": {
     "binding": "AI"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "WAITLIST_DB",
+      "database_name": "waitlist-db",
+      "database_id": "waitlist-db"
+    }
+  ]
   /**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/

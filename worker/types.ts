@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 /**
  * Type definitions for the PDF Chat application backend
  */
@@ -172,6 +174,3 @@ export interface AuthenticatedUser {
   name: string;
   tenantId: string;
 }
-
-// We'll use a different approach for extending Hono context
-// that doesn't require module augmentation

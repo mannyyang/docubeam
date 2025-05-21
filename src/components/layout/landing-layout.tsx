@@ -9,23 +9,9 @@ export function LandingLayout({ children }: LandingLayoutProps) {
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between px-6 py-4 border-b border-white/10">
+      <header className="sticky top-0 z-10 flex h-16 items-center justify-between px-6 py-4 border-b border-white/10 bg-black/50 backdrop-blur-md">
         <div className="flex items-center">
-          <h1 className="text-xl font-bold tracking-tight">Magic UI</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <a 
-            href="/login" 
-            className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
-          >
-            Log in
-          </a>
-          <a 
-            href="/signup" 
-            className="px-4 py-2 text-sm font-medium bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors border border-zinc-700"
-          >
-            Sign up
-          </a>
+          <h1 className="text-xl font-bold tracking-tight">Docubeam</h1>
         </div>
       </header>
       

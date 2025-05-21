@@ -1,6 +1,18 @@
 import { z } from "zod";
 
 /**
+ * Waitlist schemas
+ */
+export const waitlistSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const waitlistResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+});
+
+/**
  * Authentication schemas
  */
 export const loginSchema = z.object({

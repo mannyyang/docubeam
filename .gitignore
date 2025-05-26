@@ -26,3 +26,9 @@ dist-ssr
 # wrangler files
 .wrangler
 .dev.vars*
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging

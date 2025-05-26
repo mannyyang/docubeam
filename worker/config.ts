@@ -22,10 +22,9 @@ export const API_ROUTES = {
 
 // R2 bucket configuration
 export const STORAGE_CONFIG = {
-  // Base folder structure for multitenancy
+  // Base folder structure
   FOLDER_STRUCTURE: {
     DOCUMENTS: "documents", // Base folder for all documents
-    TENANT_PREFIX: "tenant", // Prefix for tenant folders
   },
   
   // File types and limits

@@ -30,12 +30,8 @@ documentRoutes.post(API_ROUTES.DOCUMENTS.UPLOAD, async (c: Context<{ Bindings: E
       return c.json(formatErrorResponse("File size exceeds the maximum limit of 10MB"), 400);
     }
     
-    // In a real app, this would come from authentication
-    const userId = "user-123";
-    const tenantId = "default-tenant";
-    
     // Upload the document using the DocumentService
-    const result = await DocumentService.uploadDocument(file, userId, tenantId, c.env);
+    const result = await DocumentService.uploadDocument(file, c.env);
     
     // Return the document information
     return c.json(formatSuccessResponse(result));
@@ -56,12 +52,8 @@ documentRoutes.post(API_ROUTES.DOCUMENTS.UPLOAD, async (c: Context<{ Bindings: E
  */
 documentRoutes.get(API_ROUTES.DOCUMENTS.BASE, async (c: Context<{ Bindings: Env }>) => {
   try {
-    // In a real app, we would get the user ID and tenant ID from authentication
-    const userId = "user-123";
-    const tenantId = "default-tenant";
-    
-    // Get all documents for the user
-    const documents = await DocumentService.getDocuments(userId, tenantId, c.env);
+    // Get all documents
+    const documents = await DocumentService.getDocuments(c.env);
     
     return c.json(formatSuccessResponse(documents));
   } catch (error: unknown) {
@@ -77,11 +69,9 @@ documentRoutes.get(API_ROUTES.DOCUMENTS.BASE, async (c: Context<{ Bindings: Env 
 documentRoutes.get(API_ROUTES.DOCUMENTS.GET, async (c: Context<{ Bindings: Env }>) => {
   try {
     const documentId = c.req.param("id");
-    const userId = "user-123"; // In a real app, this would come from auth
-    const tenantId = "default-tenant"; // In a real app, this would come from auth
     
     // Get the document
-    const document = await DocumentService.getDocument(documentId, userId, tenantId, c.env);
+    const document = await DocumentService.getDocument(documentId, c.env);
     
     return c.json(formatSuccessResponse(document));
   } catch (error: unknown) {
@@ -102,11 +92,9 @@ documentRoutes.get(API_ROUTES.DOCUMENTS.GET, async (c: Context<{ Bindings: Env }
 documentRoutes.get("/api/documents/:id/metadata", async (c: Context<{ Bindings: Env }>) => {
   try {
     const documentId = c.req.param("id");
-    const userId = "user-123"; // In a real app, this would come from auth
-    const tenantId = "default-tenant"; // In a real app, this would come from auth
     
     // Get the document
-    const document = await DocumentService.getDocument(documentId, userId, tenantId, c.env);
+    const document = await DocumentService.getDocument(documentId, c.env);
     
     // Get the PDF file
     const pdfObject = await c.env.PDF_BUCKET.get(document.path);
@@ -138,11 +126,9 @@ documentRoutes.get("/api/documents/:id/metadata", async (c: Context<{ Bindings: 
 documentRoutes.delete(API_ROUTES.DOCUMENTS.DELETE, async (c: Context<{ Bindings: Env }>) => {
   try {
     const documentId = c.req.param("id");
-    const userId = "user-123"; // In a real app, this would come from auth
-    const tenantId = "default-tenant"; // In a real app, this would come from auth
     
     // Delete the document
-    await DocumentService.deleteDocument(documentId, userId, tenantId, c.env);
+    await DocumentService.deleteDocument(documentId, c.env);
     
     return c.json(formatSuccessResponse(null));
   } catch (error: unknown) {

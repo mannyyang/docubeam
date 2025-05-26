@@ -23,16 +23,12 @@ export function generateUUID(): string {
 
 
 /**
- * Create a folder path for a tenant's document
- * @param tenantId The tenant ID
+ * Create a folder path for a document
  * @param documentId The document ID
  * @returns The folder path
  */
-export function createDocumentPath(
-  tenantId: string,
-  documentId: string
-): string {
-  return `documents/${tenantId}/${documentId}`;
+export function createDocumentPath(documentId: string): string {
+  return `documents/${documentId}`;
 }
 
 /**

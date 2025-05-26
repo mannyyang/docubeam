@@ -22,8 +22,6 @@ export interface PDFDocument {
   size: number;
   pageCount: number;
   uploadDate: Date;
-  userId: string;
-  tenantId: string;
   path: string;
   metadata?: PDFMetadata;
 }

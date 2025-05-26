@@ -17,15 +17,11 @@ export class DocumentService {
   /**
    * Upload a PDF document
    * @param file The PDF file
-   * @param userId The user ID
-   * @param tenantId The tenant ID
    * @param env Environment variables
    * @returns The uploaded document
    */
   static async uploadDocument(
     file: File,
-    userId: string,
-    tenantId: string,
     env: Env
   ): Promise<UploadedDocument> {
     // Validate the file
@@ -47,7 +43,7 @@ export class DocumentService {
     const documentId = generateUUID();
     
     // Create the document path
-    const documentPath = createDocumentPath(tenantId, documentId);
+    const documentPath = createDocumentPath(documentId);
     
     // Upload the file to R2 for backup/storage
     const buffer = await file.arrayBuffer();
@@ -81,8 +77,6 @@ export class DocumentService {
       size: file.size,
       pageCount: 0, // We don't know the page count yet, AutoRAG handles this internally
       uploadDate: new Date(),
-      userId,
-      tenantId,
       path: `${documentPath}/${file.name}`,
     };
     
@@ -108,23 +102,14 @@ export class DocumentService {
   
   
   /**
-   * Get all documents for a user
-   * @param userId The user ID
-   * @param tenantId The tenant ID
+   * Get all documents
    * @param env Environment variables
-   * @returns The user's documents
+   * @returns All documents
    */
-  static async getDocuments(
-    _userId: string,
-    tenantId: string,
-    env: Env
-  ): Promise<PDFDocument[]> {
-    // In a real implementation, this would query a database
-    // For this demo, we'll list objects in the R2 bucket
-    
-    // List all objects in the tenant's documents folder
+  static async getDocuments(env: Env): Promise<PDFDocument[]> {
+    // List all objects in the documents folder
     const objects = await env.PDF_BUCKET.list({
-      prefix: `documents/${tenantId}/`,
+      prefix: `documents/`,
       delimiter: "/",
     });
     
@@ -132,8 +117,8 @@ export class DocumentService {
     const documentIds = new Set<string>();
     for (const object of objects.objects) {
       const parts = object.key.split("/");
-      if (parts.length >= 3) {
-        documentIds.add(parts[2]);
+      if (parts.length >= 2) {
+        documentIds.add(parts[1]);
       }
     }
     
@@ -142,7 +127,7 @@ export class DocumentService {
     for (const documentId of documentIds) {
       try {
         const metadataObject = await env.PDF_BUCKET.get(
-          `documents/${tenantId}/${documentId}/metadata.json`
+          `documents/${documentId}/metadata.json`
         );
         
         if (metadataObject) {
@@ -163,20 +148,16 @@ export class DocumentService {
   /**
    * Get a document by ID
    * @param documentId The document ID
-   * @param userId The user ID
-   * @param tenantId The tenant ID
    * @param env Environment variables
    * @returns The document
    */
   static async getDocument(
     documentId: string,
-    _userId: string,
-    tenantId: string,
     env: Env
   ): Promise<PDFDocument> {
     // Get the document metadata
     const metadataObject = await env.PDF_BUCKET.get(
-      `documents/${tenantId}/${documentId}/metadata.json`
+      `documents/${documentId}/metadata.json`
     );
     
     if (!metadataObject) {
@@ -185,33 +166,24 @@ export class DocumentService {
     
     const document = await metadataObject.json<PDFDocument>();
     
-    // Verify that the document belongs to the user's tenant
-    if (document.tenantId !== tenantId) {
-      throw new NotFoundError(ERROR_MESSAGES.DOCUMENTS.NOT_FOUND);
-    }
-    
     return document;
   }
   
   /**
    * Delete a document
    * @param documentId The document ID
-   * @param userId The user ID
-   * @param tenantId The tenant ID
    * @param env Environment variables
    */
   static async deleteDocument(
     documentId: string,
-    userId: string,
-    tenantId: string,
     env: Env
   ): Promise<void> {
-    // Verify that the document exists and belongs to the user's tenant
-    await this.getDocument(documentId, userId, tenantId, env);
+    // Verify that the document exists
+    await this.getDocument(documentId, env);
     
     // List all objects in the document folder in R2
     const objects = await env.PDF_BUCKET.list({
-      prefix: `documents/${tenantId}/${documentId}/`,
+      prefix: `documents/${documentId}/`,
     });
     
     // Delete all objects from R2

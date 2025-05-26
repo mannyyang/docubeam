@@ -8,6 +8,13 @@
       "when": 1747988303975,
       "tag": "0000_graceful_lionheart",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1748243122286,
+      "tag": "0001_yielding_ozymandias",
+      "breakpoints": true
     }
   ]
 }

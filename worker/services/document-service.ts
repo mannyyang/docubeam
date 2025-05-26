@@ -1,7 +1,7 @@
 import {
   createDocumentPath,
   generateUUID,
-  extractTextFromPDF
+  // extractTextFromPDF
 } from "../utils";
 import {
   PDFDocument,
@@ -53,19 +53,20 @@ export class DocumentService {
       },
     });
     
+    // TODO: Re-enable text extraction later
     // Extract text from the PDF using Mistral AI
-    const text = await extractTextFromPDF(buffer, env);
+    // const text = await extractTextFromPDF(buffer, env);
     
     // Store the extracted text in R2
-    await env.PDF_BUCKET.put(
-      `${documentPath}/text.txt`,
-      text,
-      {
-        httpMetadata: {
-          contentType: "text/plain",
-        },
-      }
-    );
+    // await env.PDF_BUCKET.put(
+    //   `${documentPath}/text.txt`,
+    //   text,
+    //   {
+    //     httpMetadata: {
+    //       contentType: "text/plain",
+    //     },
+    //   }
+    // );
     
     // Use our generated document ID
     const finalDocumentId = documentId;
@@ -91,12 +92,16 @@ export class DocumentService {
       }
     );
     
+    // Generate the document URL (points to the file endpoint)
+    const documentUrl = `/api/documents/${finalDocumentId}/file`;
+    
     // Return the uploaded document
     return {
       documentId: finalDocumentId,
       name: file.name,
       pageCount: 0, // We don't know the page count yet
       size: file.size,
+      url: documentUrl,
     };
   }
   

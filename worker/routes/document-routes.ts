@@ -86,6 +86,45 @@ documentRoutes.get(API_ROUTES.DOCUMENTS.GET, async (c: Context<{ Bindings: Env }
 });
 
 /**
+ * Serve the actual PDF file
+ * GET /api/documents/:id/file
+ */
+documentRoutes.get("/api/documents/:id/file", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    
+    // Get the document
+    const document = await DocumentService.getDocument(documentId, c.env);
+    
+    // Get the PDF file from R2
+    const pdfObject = await c.env.PDF_BUCKET.get(document.path);
+    
+    if (!pdfObject) {
+      return c.json(formatErrorResponse("PDF file not found"), 404);
+    }
+    
+    // Get the file content
+    const pdfBuffer = await pdfObject.arrayBuffer();
+    
+    // Set appropriate headers for PDF file
+    c.header("Content-Type", "application/pdf");
+    c.header("Content-Disposition", `inline; filename="${document.name}"`);
+    c.header("Content-Length", pdfBuffer.byteLength.toString());
+    
+    // Return the PDF file
+    return c.body(pdfBuffer);
+  } catch (error: unknown) {
+    console.error("Serve PDF file error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to serve PDF file"), 500);
+  }
+});
+
+/**
  * Extract metadata from a PDF document
  * GET /api/documents/:id/metadata
  */

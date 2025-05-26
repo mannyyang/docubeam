@@ -4,8 +4,16 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import { Particles } from "@/components/magicui/particles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AnimatedBeamMultipleOutputDemo } from "@/components/ui/pipeline";
+import { PdfUploadHero } from "@/components/pdf/pdf-upload-hero";
 import { useState } from "react";
+
+interface UploadedDocument {
+  documentId: string;
+  name: string;
+  pageCount: number;
+  size: number;
+  url: string;
+}
 
 interface HeroSectionProps {
   onJoinWaitlist: (email: string) => Promise<void>;
@@ -30,6 +38,12 @@ export function HeroSection({ onJoinWaitlist }: HeroSectionProps) {
       setIsSubmitting(false);
     }
   };
+
+  const handleUploadSuccess = (document: UploadedDocument) => {
+    console.log('Document uploaded successfully:', document);
+    // You can add additional logic here, like redirecting to a chat page
+  };
+
   return (
     <section id="hero" className="relative w-full min-h-screen flex items-center justify-center text-center">
       {/* Particles background */}
@@ -101,8 +115,8 @@ export function HeroSection({ onJoinWaitlist }: HeroSectionProps) {
           </Button>
         </form>
 
-        {/* Animated Beam with Border */}
-        <div className="relative mt-[8rem] animate-fade-up opacity-0 [--animation-delay:400ms] [perspective:2000px]">
+        {/* PDF Upload with Border Beam */}
+        <div className="w-full relative mt-[8rem] animate-fade-up opacity-0 [--animation-delay:400ms] [perspective:2000px]">
           <div className="rounded-xl border border-white/10 bg-transparent before:absolute before:left-0 before:top-1/4 before:h-full before:w-full before:opacity-0 before:[filter:blur(180px)] before:[background-image:linear-gradient(to_bottom,var(--color-one),var(--color-one),transparent_40%)] before:animate-image-glow">
             <BorderBeam
               size={200}
@@ -112,8 +126,8 @@ export function HeroSection({ onJoinWaitlist }: HeroSectionProps) {
               delay={-11}
               className="absolute inset-[0]"
             />
-            <div className="relative z-10 bg-transparent">
-              <AnimatedBeamMultipleOutputDemo />
+            <div className="relative z-10 bg-transparent p-8">
+              <PdfUploadHero onUploadSuccess={handleUploadSuccess} />
             </div>
           </div>
         </div>

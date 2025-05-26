@@ -39,10 +39,15 @@ export function Router() {
         !anchor.hasAttribute("target") &&
         anchor.hasAttribute("href")
       ) {
-        e.preventDefault();
         const url = new URL(anchor.href);
         const newPath = url.pathname;
         
+        // Don't intercept API routes - let them go to the backend
+        if (newPath.startsWith("/api/")) {
+          return;
+        }
+        
+        e.preventDefault();
         window.history.pushState({}, "", newPath);
         setCurrentPath(newPath);
       }

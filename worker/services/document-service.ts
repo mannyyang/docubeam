@@ -1,11 +1,16 @@
 import {
   createDocumentPath,
   generateUUID,
-  // extractTextFromPDF
+  extractTextFromPDF,
+  processOCRResult,
+  storeOCRResults,
+  getOCRResults,
+  getDocumentText
 } from "../utils";
 import {
   PDFDocument,
-  UploadedDocument
+  UploadedDocument,
+  ProcessedOCRResult
 } from "../types";
 import { ERROR_MESSAGES, STORAGE_CONFIG } from "../config";
 import { NotFoundError, ValidationError } from "../middleware/error";
@@ -45,40 +50,27 @@ export class DocumentService {
     // Create the document path
     const documentPath = createDocumentPath(documentId);
     
-    // Upload the file to R2 for backup/storage
+    // Upload the file to R2 in the organized structure
     const buffer = await file.arrayBuffer();
-    await env.PDF_BUCKET.put(`${documentPath}/${file.name}`, buffer, {
+    await env.PDF_BUCKET.put(`${documentPath}/original/${file.name}`, buffer, {
       httpMetadata: {
         contentType: file.type,
       },
     });
     
-    // TODO: Re-enable text extraction later
-    // Extract text from the PDF using Mistral AI
-    // const text = await extractTextFromPDF(buffer, env);
+    // Process OCR in the background (async)
+    this.processDocumentOCR(documentId, buffer, env).catch(error => {
+      console.error(`OCR processing failed for document ${documentId}:`, error);
+    });
     
-    // Store the extracted text in R2
-    // await env.PDF_BUCKET.put(
-    //   `${documentPath}/text.txt`,
-    //   text,
-    //   {
-    //     httpMetadata: {
-    //       contentType: "text/plain",
-    //     },
-    //   }
-    // );
-    
-    // Use our generated document ID
-    const finalDocumentId = documentId;
-    
-    // Create the document metadata
+    // Create the document metadata with initial values
     const document: PDFDocument = {
-      id: finalDocumentId,
+      id: documentId,
       name: file.name,
       size: file.size,
-      pageCount: 0, // We don't know the page count yet, AutoRAG handles this internally
+      pageCount: 0, // Will be updated after OCR processing
       uploadDate: new Date(),
-      path: `${documentPath}/${file.name}`,
+      path: `${documentPath}/original/${file.name}`,
     };
     
     // Store the document metadata in R2
@@ -93,19 +85,145 @@ export class DocumentService {
     );
     
     // Generate the document URL (points to the file endpoint)
-    const documentUrl = `/api/documents/${finalDocumentId}/file`;
+    const documentUrl = `/api/documents/${documentId}/file`;
     
     // Return the uploaded document
     return {
-      documentId: finalDocumentId,
+      documentId: documentId,
       name: file.name,
-      pageCount: 0, // We don't know the page count yet
+      pageCount: 0, // Will be updated after OCR processing
       size: file.size,
       url: documentUrl,
     };
   }
-  
-  
+
+  /**
+   * Process OCR for a document (async background task)
+   * @param documentId The document ID
+   * @param buffer The PDF buffer
+   * @param env Environment variables
+   */
+  static async processDocumentOCR(
+    documentId: string,
+    buffer: ArrayBuffer,
+    env: Env
+  ): Promise<void> {
+    try {
+      console.log(`Starting OCR processing for document ${documentId}`);
+      
+      // Extract text using Mistral OCR
+      const ocrResult = await extractTextFromPDF(buffer, env);
+      
+      // Process the OCR result
+      const processedOCR = processOCRResult(ocrResult);
+      
+      // Store OCR results in organized structure
+      await storeOCRResults(documentId, processedOCR, env);
+      
+      // Update document metadata with page count
+      await this.updateDocumentMetadata(documentId, {
+        pageCount: processedOCR.totalPages
+      }, env);
+      
+      console.log(`OCR processing completed for document ${documentId}. Pages: ${processedOCR.totalPages}`);
+    } catch (error) {
+      console.error(`OCR processing failed for document ${documentId}:`, error);
+      
+      // Store error information in metadata
+      await this.updateDocumentMetadata(documentId, {
+        ocrError: error instanceof Error ? error.message : "Unknown OCR error"
+      }, env);
+    }
+  }
+
+  /**
+   * Update document metadata
+   * @param documentId The document ID
+   * @param updates Partial updates to apply
+   * @param env Environment variables
+   */
+  static async updateDocumentMetadata(
+    documentId: string,
+    updates: Partial<PDFDocument & { ocrError?: string }>,
+    env: Env
+  ): Promise<void> {
+    try {
+      // Get existing metadata
+      const existingDoc = await this.getDocument(documentId, env);
+      
+      // Merge updates
+      const updatedDoc = { ...existingDoc, ...updates };
+      
+      // Store updated metadata
+      await env.PDF_BUCKET.put(
+        `documents/${documentId}/metadata.json`,
+        JSON.stringify(updatedDoc),
+        {
+          httpMetadata: {
+            contentType: "application/json",
+          },
+        }
+      );
+    } catch (error) {
+      console.error(`Failed to update metadata for document ${documentId}:`, error);
+    }
+  }
+
+  /**
+   * Get OCR results for a document
+   * @param documentId The document ID
+   * @param env Environment variables
+   * @returns The OCR results or null if not available
+   */
+  static async getDocumentOCR(
+    documentId: string,
+    env: Env
+  ): Promise<ProcessedOCRResult | null> {
+    return await getOCRResults(documentId, env);
+  }
+
+  /**
+   * Get extracted text for a document
+   * @param documentId The document ID
+   * @param env Environment variables
+   * @returns The extracted text or null if not available
+   */
+  static async getDocumentExtractedText(
+    documentId: string,
+    env: Env
+  ): Promise<string | null> {
+    return await getDocumentText(documentId, env);
+  }
+
+  /**
+   * Get a specific page's content
+   * @param documentId The document ID
+   * @param pageNumber The page number (1-indexed)
+   * @param env Environment variables
+   * @returns The page content or null if not found
+   */
+  static async getDocumentPage(
+    documentId: string,
+    pageNumber: number,
+    env: Env
+  ): Promise<string | null> {
+    try {
+      const pageNumberPadded = pageNumber.toString().padStart(3, '0');
+      const pageObject = await env.PDF_BUCKET.get(
+        `documents/${documentId}/ocr/pages/page-${pageNumberPadded}.md`
+      );
+      
+      if (!pageObject) {
+        return null;
+      }
+
+      return await pageObject.text();
+    } catch (error) {
+      console.error(`Error fetching page ${pageNumber} for document ${documentId}:`, error);
+      return null;
+    }
+  }
+
   /**
    * Get all documents
    * @param env Environment variables
@@ -196,5 +314,4 @@ export class DocumentService {
       await env.PDF_BUCKET.delete(object.key);
     }
   }
-  
 }

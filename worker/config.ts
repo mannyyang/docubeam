@@ -10,6 +10,10 @@ export const API_ROUTES = {
     UPLOAD: "/api/documents/upload",
     GET: "/api/documents/:id",
     DELETE: "/api/documents/:id",
+    OCR: "/api/documents/:id/ocr",
+    TEXT: "/api/documents/:id/text",
+    PAGE: "/api/documents/:id/pages/:pageNumber",
+    OCR_STATUS: "/api/documents/:id/ocr/status",
   },
   
   // Chat endpoints
@@ -25,6 +29,10 @@ export const STORAGE_CONFIG = {
   // Base folder structure
   FOLDER_STRUCTURE: {
     DOCUMENTS: "documents", // Base folder for all documents
+    ORIGINAL: "original",   // Original PDF files
+    OCR: "ocr",            // OCR results and processed content
+    PAGES: "pages",        // Individual page content
+    IMAGES: "images",      // Extracted images
   },
   
   // File types and limits
@@ -38,8 +46,8 @@ export const STORAGE_CONFIG = {
 export const AI_CONFIG = {
   // Mistral AI configuration for OCR
   MISTRAL_OCR: {
-    MODEL: "mistral-large-latest",
-    MAX_TOKENS: 4096,
+    MODEL: "mistral-ocr-latest",
+    INCLUDE_IMAGES: true,
   },
   
   // AutoRAG configuration
@@ -58,6 +66,8 @@ export const ERROR_MESSAGES = {
     DELETE_FAILED: "Failed to delete document",
     INVALID_FILE_TYPE: "Invalid file type. Only PDF files are accepted",
     FILE_TOO_LARGE: "File size exceeds the maximum limit of 10MB",
+    OCR_NOT_READY: "OCR processing not completed yet",
+    OCR_FAILED: "OCR processing failed",
   },
   CHAT: {
     MESSAGE_FAILED: "Failed to send message",

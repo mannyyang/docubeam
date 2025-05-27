@@ -159,6 +159,134 @@ documentRoutes.get("/api/documents/:id/metadata", async (c: Context<{ Bindings: 
 });
 
 /**
+ * Get OCR results for a document
+ * GET /api/documents/:id/ocr
+ */
+documentRoutes.get("/api/documents/:id/ocr", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    
+    // Get OCR results
+    const ocrResults = await DocumentService.getDocumentOCR(documentId, c.env);
+    
+    if (!ocrResults) {
+      return c.json(formatErrorResponse("OCR results not available yet. Please try again later."), 404);
+    }
+    
+    return c.json(formatSuccessResponse(ocrResults));
+  } catch (error: unknown) {
+    console.error("Get OCR results error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to get OCR results"), 500);
+  }
+});
+
+/**
+ * Get extracted text for a document
+ * GET /api/documents/:id/text
+ */
+documentRoutes.get("/api/documents/:id/text", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    
+    // Get extracted text
+    const extractedText = await DocumentService.getDocumentExtractedText(documentId, c.env);
+    
+    if (!extractedText) {
+      return c.json(formatErrorResponse("Extracted text not available yet. Please try again later."), 404);
+    }
+    
+    // Return as plain text
+    c.header("Content-Type", "text/markdown");
+    return c.text(extractedText);
+  } catch (error: unknown) {
+    console.error("Get extracted text error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to get extracted text"), 500);
+  }
+});
+
+/**
+ * Get a specific page's content
+ * GET /api/documents/:id/pages/:pageNumber
+ */
+documentRoutes.get("/api/documents/:id/pages/:pageNumber", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    const pageNumber = parseInt(c.req.param("pageNumber"));
+    
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      return c.json(formatErrorResponse("Invalid page number"), 400);
+    }
+    
+    // Get page content
+    const pageContent = await DocumentService.getDocumentPage(documentId, pageNumber, c.env);
+    
+    if (!pageContent) {
+      return c.json(formatErrorResponse("Page not found or OCR not completed yet"), 404);
+    }
+    
+    // Return as plain text
+    c.header("Content-Type", "text/markdown");
+    return c.text(pageContent);
+  } catch (error: unknown) {
+    console.error("Get page content error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to get page content"), 500);
+  }
+});
+
+/**
+ * Get OCR processing status for a document
+ * GET /api/documents/:id/ocr/status
+ */
+documentRoutes.get("/api/documents/:id/ocr/status", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    
+    // Check if OCR results exist
+    const ocrResults = await DocumentService.getDocumentOCR(documentId, c.env);
+    
+    if (ocrResults) {
+      return c.json(formatSuccessResponse({
+        status: "completed",
+        totalPages: ocrResults.totalPages,
+        processedAt: ocrResults.processedAt,
+        hasImages: ocrResults.images.length > 0
+      }));
+    }
+    
+    // Check if document exists
+    await DocumentService.getDocument(documentId, c.env);
+    
+    return c.json(formatSuccessResponse({
+      status: "processing",
+      message: "OCR processing is in progress. Please check back later."
+    }));
+  } catch (error: unknown) {
+    console.error("Get OCR status error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to get OCR status"), 500);
+  }
+});
+
+/**
  * Delete a document
  * DELETE /api/documents/:id
  */

@@ -138,6 +138,69 @@ export interface OCRPage {
   text: string;
 }
 
+// Mistral OCR API types
+export interface MistralOCRResponse {
+  pages: MistralOCRPage[];
+  model: string;
+  usage_info: {
+    pages_processed: number;
+    doc_size_bytes: number | null;
+  };
+}
+
+export interface MistralOCRPage {
+  index: number;
+  markdown: string;
+  images?: MistralOCRImage[];
+  dimensions: {
+    dpi: number;
+    height: number;
+    width: number;
+  };
+}
+
+export interface MistralOCRImage {
+  id: string;
+  top_left_x: number;
+  top_left_y: number;
+  bottom_right_x: number;
+  bottom_right_y: number;
+  image_base64: string;
+}
+
+// Processed OCR types for storage
+export interface ProcessedOCRResult {
+  totalPages: number;
+  fullText: string;
+  pages: ProcessedOCRPage[];
+  images: ProcessedImage[];
+  processedAt: Date;
+}
+
+export interface ProcessedOCRPage {
+  pageNumber: number;
+  markdown: string;
+  images: MistralOCRImage[];
+  dimensions: {
+    dpi: number;
+    height: number;
+    width: number;
+  };
+}
+
+export interface ProcessedImage {
+  id: string;
+  pageNumber: number;
+  imageIndex: number;
+  boundingBox: {
+    topLeftX: number;
+    topLeftY: number;
+    bottomRightX: number;
+    bottomRightY: number;
+  };
+  base64Data: string;
+}
+
 // Hono context extensions
 export interface AppBindings {
   env: Env;

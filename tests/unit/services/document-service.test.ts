@@ -59,10 +59,14 @@ describe('DocumentService', () => {
         pageCount: 0, // Initially 0, updated after OCR
         size: 1024,
         url: '/api/documents/test-document-id/file',
+        textUrl: '/api/documents/test-document-id/text',
+        ocrUrl: '/api/documents/test-document-id/ocr',
+        statusUrl: '/api/documents/test-document-id/ocr/status',
+        imagesUrl: '/api/documents/test-document-id/images',
       })
 
-      // Verify R2 operations - original file and metadata
-      expect(mockEnv.PDF_BUCKET.put).toHaveBeenCalledTimes(2) // Original PDF + metadata
+      // Verify R2 operations - original file, metadata, and OCR results
+      expect(mockEnv.PDF_BUCKET.put).toHaveBeenCalledTimes(3) // Original PDF + metadata + OCR update
       expect(mockEnv.PDF_BUCKET.put).toHaveBeenCalledWith(
         'documents/test-document-id/original/test.pdf',
         expect.any(ArrayBuffer),

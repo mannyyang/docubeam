@@ -54,6 +54,10 @@ describe('Document Routes with OCR', () => {
         pageCount: 0, // Initially 0, updated after OCR
         size: 1024,
         url: '/api/documents/test-doc-id/file',
+        textUrl: '/api/documents/test-doc-id/text',
+        ocrUrl: '/api/documents/test-doc-id/ocr',
+        statusUrl: '/api/documents/test-doc-id/ocr/status',
+        imagesUrl: '/api/documents/test-doc-id/images',
       })
 
       const file = createMockFile('test.pdf', 'application/pdf', 1024)
@@ -72,6 +76,10 @@ describe('Document Routes with OCR', () => {
       expect(json.status).toBe('success')
       expect(json.data.documentId).toBe('test-doc-id')
       expect(json.data.url).toBe('/api/documents/test-doc-id/file')
+      expect(json.data.textUrl).toBe('/api/documents/test-doc-id/text')
+      expect(json.data.ocrUrl).toBe('/api/documents/test-doc-id/ocr')
+      expect(json.data.statusUrl).toBe('/api/documents/test-doc-id/ocr/status')
+      expect(json.data.imagesUrl).toBe('/api/documents/test-doc-id/images')
     })
 
     it('should reject non-PDF files', async () => {

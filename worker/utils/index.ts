@@ -48,14 +48,14 @@ export async function extractTextFromPDF(
   pdfBuffer: ArrayBuffer,
   env: Env
 ): Promise<MistralOCRResponse> {
-  console.log(`🔄 Starting OCR extraction for PDF (${pdfBuffer.byteLength} bytes)`);
+  console.log(`[OCR_API_START] operation=mistral_ocr buffer_size=${pdfBuffer.byteLength}`);
   
   // Check if API key is available
   if (!env.MISTRAL_AI_API_KEY) {
-    console.error(`❌ MISTRAL_AI_API_KEY is not set in environment variables`);
+    console.error(`[OCR_API_ERROR] type=missing_api_key message=MISTRAL_AI_API_KEY not configured`);
     throw new Error("MISTRAL_AI_API_KEY is not configured");
   }
-  console.log(`🔑 Mistral API key is available (${env.MISTRAL_AI_API_KEY.substring(0, 10)}...)`);
+  console.log(`[OCR_API_PROGRESS] step=api_key_validated key_prefix=${env.MISTRAL_AI_API_KEY.substring(0, 10)}`);
   
   // Convert the PDF buffer to base64
   const base64PDF = btoa(

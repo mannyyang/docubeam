@@ -98,7 +98,7 @@ export const createMockPDFBuffer = (): ArrayBuffer => {
 export const mockMistralOCRResponse = {
   pages: [
     {
-      index: 1,
+      index: 0,
       markdown: '# Test Document\n\nThis is a test document with some content.',
       images: [
         {
@@ -117,7 +117,7 @@ export const mockMistralOCRResponse = {
       }
     },
     {
-      index: 2,
+      index: 1,
       markdown: '## Page 2\n\nThis is the second page of the document.',
       images: [],
       dimensions: {

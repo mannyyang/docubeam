@@ -29,28 +29,28 @@ export class DocumentService {
     file: File,
     env: Env
   ): Promise<UploadedDocument> {
-    console.log(`📤 Starting document upload: ${file.name} (${file.size} bytes, ${file.type})`);
-    
-    // Validate the file
+    // Validate the file first
     if (!file) {
       throw new ValidationError("No file provided");
     }
     
+    console.log(`[UPLOAD_START] document=${file.name} size=${file.size} type=${file.type}`);
+    
     // Check file type
     if (!STORAGE_CONFIG.FILE_LIMITS.ACCEPTED_MIME_TYPES.includes(file.type)) {
-      console.error(`❌ Invalid file type: ${file.type}`);
+      console.error(`[UPLOAD_ERROR] type=invalid_file_type file_type=${file.type}`);
       throw new ValidationError(ERROR_MESSAGES.DOCUMENTS.INVALID_FILE_TYPE);
     }
     
     // Check file size
     if (file.size > STORAGE_CONFIG.FILE_LIMITS.MAX_FILE_SIZE) {
-      console.error(`❌ File too large: ${file.size} bytes (max: ${STORAGE_CONFIG.FILE_LIMITS.MAX_FILE_SIZE})`);
+      console.error(`[UPLOAD_ERROR] type=file_too_large size=${file.size} max_size=${STORAGE_CONFIG.FILE_LIMITS.MAX_FILE_SIZE}`);
       throw new ValidationError(ERROR_MESSAGES.DOCUMENTS.FILE_TOO_LARGE);
     }
     
     // Generate a document ID
     const documentId = generateUUID();
-    console.log(`📋 Generated document ID: ${documentId}`);
+    console.log(`[UPLOAD_PROGRESS] step=id_generated document_id=${documentId}`);
     
     // Create the document path
     const documentPath = createDocumentPath(documentId);
@@ -142,7 +142,7 @@ export class DocumentService {
     env: Env
   ): Promise<string> {
     try {
-      console.log(`🔄 Starting OCR processing for document ${documentId}`);
+      console.log(`[OCR_START] document_id=${documentId} operation=ocr_processing`);
       
       // Extract text using Mistral OCR
       console.log(`📡 Calling Mistral OCR API...`);
@@ -177,12 +177,7 @@ export class DocumentService {
       
       return textUrl;
     } catch (error) {
-      console.error(`❌ OCR processing failed for document ${documentId}:`, error);
-      console.error(`❌ Error details:`, {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : 'No stack trace'
-      });
+      console.error(`[OCR_ERROR] document_id=${documentId} error_type=processing_failed error_name=${error instanceof Error ? error.name : 'Unknown'} error_message=${error instanceof Error ? error.message : String(error)}`);
       
       // Store error information in metadata
       try {

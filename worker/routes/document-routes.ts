@@ -36,7 +36,7 @@ documentRoutes.post(API_ROUTES.DOCUMENTS.UPLOAD, async (c: Context<{ Bindings: E
     // Return the document information
     return c.json(formatSuccessResponse(result));
   } catch (error: unknown) {
-    console.error("Document upload error:", error);
+    console.error(`[ROUTE_ERROR] endpoint=upload_document error=${error instanceof Error ? error.message : String(error)}`);
     
     if (error instanceof Error) {
       return c.json(formatErrorResponse(error.message), 500);

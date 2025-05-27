@@ -1,0 +1,155 @@
+# Cline Rules for PDF Chat Website AI
+
+## Project Overview
+This is a PDF chat application built with React Router, Cloudflare Workers, and Mistral AI OCR. The application allows users to upload PDF documents, extract text using OCR, and chat with the document content.
+
+## Logging Standards
+
+### Log Format Rules
+- All logs MUST use structured format: `[CATEGORY] key=value key2=value2 message`
+- Categories MUST be in ALL_CAPS with underscores
+- Key-value pairs MUST use snake_case for keys
+- Document IDs MUST always be logged as `document_id=value`
+- File operations MUST include relevant metadata (size, type, etc.)
+
+### Required Log Categories
+- `[UPLOAD_START]` - Document upload initiation
+- `[UPLOAD_PROGRESS]` - Upload progress steps
+- `[UPLOAD_ERROR]` - Upload validation errors
+- `[OCR_START]` - OCR processing initiation
+- `[OCR_API_START]` - Mistral API calls
+- `[OCR_API_PROGRESS]` - API processing steps
+- `[OCR_API_ERROR]` - API-related errors
+- `[OCR_ERROR]` - OCR processing errors
+- `[ROUTE_ERROR]` - HTTP route errors
+- `[CHAT_START]` - Chat session initiation
+- `[CHAT_ERROR]` - Chat processing errors
+
+### Error Logging Rules
+- ALL errors MUST include error_type, error_name, and error_message
+- API errors MUST include the API endpoint and status code
+- File validation errors MUST include file_type and size
+- Document-related errors MUST include document_id
+
+### Performance Logging Rules
+- API calls MUST log start time and buffer/payload size
+- File operations MUST log file size and processing time
+- OCR operations MUST log page count and image count
+
+## Code Standards
+
+### File Organization
+- Services go in `worker/services/`
+- Routes go in `worker/routes/`
+- Utilities go in `worker/utils/`
+- Types go in `worker/types.ts`
+- Configuration in `worker/config.ts`
+
+### Error Handling
+- Use custom error classes from `worker/middleware/error.ts`
+- Always wrap async operations in try-catch
+- Log errors before throwing
+- Return structured error responses using `formatErrorResponse()`
+
+### API Response Format
+- Success responses MUST use `formatSuccessResponse(data)`
+- Error responses MUST use `formatErrorResponse(message)`
+- Include appropriate HTTP status codes
+
+### Environment Variables
+- API keys MUST be validated before use
+- Log validation results (without exposing keys)
+- Use descriptive error messages for missing config
+
+## Dependencies
+
+### Package Manager
+- ALWAYS use `pnpm` for package management
+- Never read files in `/node_modules`
+
+### Key Dependencies
+- Hono for HTTP routing
+- Mistral AI for OCR processing
+- Cloudflare R2 for file storage
+- React Router for frontend routing
+
+## Development Workflow
+
+### Testing Standards
+- Run tests with `pnpm test` before committing changes
+- All tests must pass before deployment
+- Mock data must use 0-based indexing for Mistral OCR responses
+- Test expectations must account for all R2 operations (file upload + metadata + OCR processing)
+- Validate null/undefined inputs before accessing object properties
+- Use proper error classes (ValidationError, NotFoundError) in tests
+
+### Testing Logs
+- Use `pnpm wrangler tail` for log monitoring
+- Filter logs using `--search` parameter
+- Test error scenarios to ensure proper logging
+- Verify log structure matches documented patterns
+
+### Debugging Process
+1. Start with category-specific filters (`--search "UPLOAD"`)
+2. Narrow down to specific operations (`--search "UPLOAD_ERROR"`)
+3. Track specific documents (`--search "document_id=abc123"`)
+4. Monitor API calls (`--search "OCR_API"`)
+
+### File Handling
+- Validate file type and size before processing
+- Log all validation steps
+- Store files in organized R2 structure: `documents/{id}/original/`, `documents/{id}/ocr/`
+- Generate consistent URLs for document access
+
+## Security Rules
+
+### API Keys
+- Never log full API keys (use prefixes only)
+- Validate API key presence before making calls
+- Use environment variables for all secrets
+
+### File Access
+- Validate document ownership before serving files
+- Use appropriate CORS headers for image serving
+- Implement proper content-type detection
+
+## Performance Guidelines
+
+### R2 Storage
+- Use organized folder structure
+- Store metadata separately from content
+- Implement proper caching headers
+- Use appropriate content-types
+
+### OCR Processing
+- Process documents synchronously for debugging
+- Store results in multiple formats (JSON, markdown, individual pages)
+- Extract and store images separately
+- Log processing metrics (pages, images, text length)
+
+## Monitoring and Observability
+
+### Required Metrics
+- Upload success/failure rates
+- OCR processing times
+- API response times
+- Error rates by category
+
+### Log Retention
+- Structure logs for easy filtering and analysis
+- Include correlation IDs (document_id) across operations
+- Log both start and completion of long-running operations
+
+## Documentation Requirements
+
+### Code Comments
+- Document complex OCR processing logic
+- Explain R2 storage organization
+- Document API integration patterns
+
+### README Updates
+- Keep deployment instructions current
+- Document environment variable requirements
+- Include troubleshooting guides
+
+This file should be updated whenever new logging patterns or development standards are established.

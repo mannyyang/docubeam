@@ -1,4 +1,3 @@
-import type { MetaFunction } from "react-router";
 import { LandingLayout } from "../components/layout/landing-layout";
 import { useToast } from "../hooks/use-toast";
 import { ApiService } from "../services/api-service";
@@ -7,24 +6,6 @@ import { ProblemSection } from "../components/sections/ProblemSection";
 import { ValuePropositionSection } from "../components/sections/ValuePropositionSection";
 import { HowItWorksSection } from "../components/sections/HowItWorksSection";
 import { CtaSection } from "../components/sections/CtaSection";
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Docubeam - Extract PDF Comments & Get Actionable Insights" },
-    { name: "description", content: "Stop chasing comments and get actionable insights from your PDF documents. Docubeam extracts, organizes, and analyzes comments for better decision-making." },
-    { name: "keywords", content: "PDF comments, document management, PDF extraction, comment organization, document insights, PDF annotations" },
-    
-    // Open Graph
-    { property: "og:title", content: "Docubeam - Extract PDF Comments & Get Actionable Insights" },
-    { property: "og:description", content: "Stop chasing comments and get actionable insights from your PDF documents. Docubeam extracts, organizes, and analyzes comments for better decision-making." },
-    { property: "og:type", content: "website" },
-    { property: "og:url", content: "https://docubeam.websyte.ai/" },
-    
-    // Twitter
-    { name: "twitter:title", content: "Docubeam - Extract PDF Comments & Get Actionable Insights" },
-    { name: "twitter:description", content: "Stop chasing comments and get actionable insights from your PDF documents. Docubeam extracts, organizes, and analyzes comments for better decision-making." },
-  ];
-};
 
 export default function Index() {
   const { toast } = useToast();

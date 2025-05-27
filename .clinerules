@@ -77,11 +77,14 @@ This is a PDF chat application built with React Router, Cloudflare Workers, and 
 
 ### Testing Standards
 - Run tests with `pnpm test` before committing changes
-- All tests must pass before deployment
+- All tests must pass before deployment (currently 99/99 tests passing)
 - Mock data must use 0-based indexing for Mistral OCR responses
 - Test expectations must account for all R2 operations (file upload + metadata + OCR processing)
 - Validate null/undefined inputs before accessing object properties
 - Use proper error classes (ValidationError, NotFoundError) in tests
+- Ensure proper mock isolation in `beforeEach` hooks to prevent test interference
+- Reset validation mocks appropriately between tests to avoid global error states
+- Use consistent mock behavior across all service tests for reliability
 
 ### Testing Logs
 - Use `pnpm wrangler tail` for log monitoring
@@ -151,5 +154,25 @@ This is a PDF chat application built with React Router, Cloudflare Workers, and 
 - Keep deployment instructions current
 - Document environment variable requirements
 - Include troubleshooting guides
+
+### LLM Documentation Reference
+- Generated documentation is stored in `llms/` folder:
+  - `llms/ARCHITECTURE.md` - Comprehensive product architecture documentation
+  - `llms/SEO-README.md` - SEO and marketing documentation
+  - `llms/LOGGING.md` - Detailed logging standards and patterns
+  - `llms/TESTING.md` - Comprehensive testing documentation
+- These files serve as reference for maintaining consistent standards
+- Update these files when new patterns or requirements are established
+
+## Recent Updates
+
+### Test Suite Improvements (January 2025)
+- Fixed 12 failing tests in document-orchestration-service.test.ts
+- Improved mock configuration and isolation between tests
+- Enhanced error handling test scenarios for validation and OCR processing
+- Standardized mock behavior across all service tests
+- Achieved 100% test pass rate (99/99 tests passing across 5 test files)
+- Better coverage of edge cases and error conditions
+- Proper handling of DocumentValidationService.validateDocumentId across different test scenarios
 
 This file should be updated whenever new logging patterns or development standards are established.

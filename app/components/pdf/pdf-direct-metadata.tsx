@@ -7,9 +7,9 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Button } from "../ui/button";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, FileText } from "lucide-react";
-import { ApiService } from "../../services/api-service";
+import { ApiService } from "@/services/api-service";
 
 interface PDFMetadataResult {
   filename: string;

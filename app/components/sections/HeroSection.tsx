@@ -97,9 +97,9 @@ export function HeroSection({ onJoinWaitlist }: HeroSectionProps) {
             />
           </div>
           <Button
-            className="h-10 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary shadow hover:bg-primary/90 px-4 gap-1 rounded-md text-white dark:text-black"
             type="submit"
             disabled={isSubmitting}
+            className="gap-1 group"
           >
             {isSubmitting ? (
               <>

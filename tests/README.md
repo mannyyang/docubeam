@@ -1,15 +1,16 @@
 # Testing Documentation
 
-This document describes the testing setup for the public document upload feature.
+This document describes the testing setup for the PDF document upload feature with Mistral OCR integration.
 
 ## Overview
 
-The test suite validates the implementation of public document uploads, which allows users to upload PDF documents without authentication. The feature includes:
+The test suite validates the implementation of public document uploads with OCR processing, which allows users to upload PDF documents without authentication and automatically extract text using Mistral AI's OCR service. The feature includes:
 
 - Public document upload endpoint
-- Simplified storage structure (removed tenant/user requirements)
-- Document-user join table for future user associations
-- Database schema changes
+- Mistral OCR integration for text extraction
+- Organized R2 storage structure with original PDFs and OCR results
+- Multiple API endpoints for accessing OCR data
+- Background OCR processing with status tracking
 
 ## Test Structure
 
@@ -17,15 +18,15 @@ The test suite validates the implementation of public document uploads, which al
 tests/
 ├── setup/
 │   ├── test-env.ts          # Test environment configuration
-│   └── mocks.ts             # Mock utilities for Cloudflare Workers
+│   └── mocks.ts             # Mock utilities for Cloudflare Workers & OCR
 ├── unit/
 │   ├── services/
-│   │   └── document-service.test.ts  # DocumentService unit tests
+│   │   └── document-service.test.ts  # DocumentService unit tests with OCR
 │   └── utils/
 │       └── document-utils.test.ts    # Utility function tests
 ├── integration/
 │   └── routes/
-│       └── document-routes.test.ts   # API endpoint integration tests
+│       └── document-routes.test.ts   # API endpoint integration tests with OCR
 ├── simple.test.ts           # Basic feature validation tests
 └── README.md               # This file
 ```
@@ -55,59 +56,87 @@ pnpm vitest run tests/simple.test.ts
 # Run utils tests
 pnpm vitest run tests/unit/utils/document-utils.test.ts
 
-# Run service tests (may have mocking issues)
+# Run service tests
 pnpm vitest run tests/unit/services/document-service.test.ts
+
+# Run integration tests
+pnpm vitest run tests/integration/routes/document-routes.test.ts
 ```
 
 ## Test Categories
 
 ### 1. Simple Feature Tests (`tests/simple.test.ts`)
-✅ **Working** - Basic validation of the public upload feature:
+✅ **Working** - Basic validation of the OCR-enabled upload feature:
 - Public upload enablement
-- Storage path structure validation
-- Document-user join table concept
+- OCR folder structure validation
+- Mistral OCR model configuration
+- New API endpoint existence
+- OCR processing features
 - File size and type validation
-- API endpoint existence
 
 ### 2. Utils Tests (`tests/unit/utils/document-utils.test.ts`)
 ✅ **Working** - Tests utility functions:
 - Document path creation
 - UUID generation
+- OCR processing utilities
 
 ### 3. Service Tests (`tests/unit/services/document-service.test.ts`)
-⚠️ **Partial** - Tests DocumentService methods:
-- Document upload validation
-- Document retrieval
-- Document deletion
-- Error handling
+✅ **Updated** - Tests DocumentService methods with OCR:
+- Document upload with OCR processing
+- OCR result retrieval
+- Extracted text access
+- Page-specific content access
+- Document metadata updates
+- Error handling for OCR failures
 
 ### 4. Integration Tests (`tests/integration/routes/document-routes.test.ts`)
-⚠️ **Partial** - Tests API endpoints:
-- Upload endpoint behavior
-- Document listing
-- Document retrieval by ID
-- Document deletion
-- Metadata extraction
+✅ **Updated** - Tests API endpoints with OCR:
+- Upload endpoint with OCR processing
+- OCR results endpoint (`/api/documents/:id/ocr`)
+- Extracted text endpoint (`/api/documents/:id/text`)
+- Page content endpoint (`/api/documents/:id/pages/:pageNumber`)
+- OCR status endpoint (`/api/documents/:id/ocr/status`)
+- Original file serving
+- Document deletion with OCR cleanup
 
 ## Key Features Tested
 
-### Public Document Upload
+### Public Document Upload with OCR
 - ✅ No authentication required
 - ✅ File type validation (PDF only)
 - ✅ File size limits (10MB max)
-- ✅ Simplified storage path: `documents/{documentId}/`
+- ✅ Organized storage path: `documents/{documentId}/original/` and `documents/{documentId}/ocr/`
+- ✅ Background OCR processing with Mistral AI
+- ✅ Text URL generation and logging
 
-### Database Schema Changes
-- ✅ Documents table without required userId
-- ✅ Document-user join table structure
-- ✅ Removed tenant dependencies
+### OCR Processing Features
+- ✅ Mistral OCR API integration (`mistral-ocr-latest`)
+- ✅ Organized R2 storage structure
+- ✅ Full OCR results with images and metadata
+- ✅ Extracted text in markdown format
+- ✅ Individual page content access
+- ✅ OCR status tracking (processing/completed/failed)
+- ✅ Error handling and logging
 
 ### API Endpoints
-- ✅ `POST /api/documents/upload` - Public upload
+- ✅ `POST /api/documents/upload` - Public upload with OCR
 - ✅ `GET /api/documents` - List all documents
 - ✅ `GET /api/documents/:id` - Get document by ID
-- ✅ `DELETE /api/documents/:id` - Delete document
+- ✅ `GET /api/documents/:id/file` - Serve original PDF
+- ✅ `GET /api/documents/:id/ocr` - Get full OCR results
+- ✅ `GET /api/documents/:id/text` - Get extracted text (markdown)
+- ✅ `GET /api/documents/:id/pages/:pageNumber` - Get specific page content
+- ✅ `GET /api/documents/:id/ocr/status` - Check OCR processing status
 - ✅ `GET /api/documents/:id/metadata` - Extract PDF metadata
+- ✅ `DELETE /api/documents/:id` - Delete document and OCR data
+
+### R2 Storage Organization
+- ✅ `documents/{documentId}/original/` - Original PDF files
+- ✅ `documents/{documentId}/ocr/full-result.json` - Complete OCR response
+- ✅ `documents/{documentId}/ocr/extracted-text.md` - Consolidated text
+- ✅ `documents/{documentId}/ocr/pages/page-XXX.md` - Individual pages
+- ✅ `documents/{documentId}/ocr/images/` - Extracted images
+- ✅ `documents/{documentId}/metadata.json` - Document metadata
 
 ## Test Environment
 
@@ -115,38 +144,40 @@ The tests use:
 - **Vitest** as the test runner
 - **jsdom** for browser environment simulation
 - **Mock utilities** for Cloudflare Workers (R2, D1)
+- **Mistral OCR mocks** for testing OCR functionality
 - **TypeScript** for type safety
 
-## Known Issues
+## Mock Data
 
-1. **Complex Mocking**: Some tests have issues with Cloudflare Workers mocking
-2. **Integration Tests**: Timeout issues with Hono app testing
-3. **Service Tests**: Module mocking conflicts
-
-## Future Improvements
-
-1. Fix Cloudflare Workers mocking for better integration tests
-2. Add end-to-end tests with real file uploads
-3. Add performance tests for large file handling
-4. Add database integration tests with real D1 database
-5. Add test coverage reporting
-
-## Test Data
-
-The tests use mock data including:
-- Sample PDF files (created programmatically)
-- Mock Cloudflare environment
-- Fake UUIDs and timestamps
-- Test document metadata
+The tests include comprehensive mock data:
+- **Mistral OCR API responses** with pages, images, and metadata
+- **Processed OCR results** with organized structure
+- **OCR status responses** for different processing states
+- **Sample PDF files** created programmatically
+- **Mock Cloudflare environment** with R2 and D1
+- **Helper functions** for creating test data
 
 ## Validation Summary
 
 The test suite successfully validates:
-- ✅ Public upload functionality works
-- ✅ Storage path structure is simplified
-- ✅ Database schema supports the new design
-- ✅ API endpoints are properly defined
-- ✅ File validation works correctly
-- ✅ Utility functions work as expected
+- ✅ Public upload functionality with OCR processing
+- ✅ Mistral OCR API integration and response handling
+- ✅ Organized R2 storage structure for original and processed content
+- ✅ Multiple API endpoints for accessing OCR data
+- ✅ Background OCR processing with status tracking
+- ✅ Error handling for OCR failures
+- ✅ File validation and size limits
+- ✅ Document metadata management
+- ✅ Complete cleanup on document deletion
 
-This provides confidence that the public document upload feature is implemented correctly and ready for use.
+## New OCR Features Covered
+
+1. **Mistral OCR Integration**: Tests the integration with `mistral-ocr-latest` model
+2. **Organized Storage**: Validates the new folder structure for original and OCR content
+3. **Multiple Access Methods**: Tests various ways to access OCR data (full results, text only, by page)
+4. **Status Tracking**: Validates OCR processing status endpoints
+5. **Image Handling**: Tests extraction and storage of images from PDFs
+6. **Error Recovery**: Tests handling of OCR processing failures
+7. **Background Processing**: Validates asynchronous OCR processing
+
+This provides comprehensive coverage of the OCR-enabled document upload feature and ensures all functionality works correctly.

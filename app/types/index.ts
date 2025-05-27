@@ -34,6 +34,11 @@ export interface UploadResponse {
   name: string;
   pageCount: number;
   size: number;
+  url: string;
+  textUrl: string;
+  ocrUrl: string;
+  statusUrl: string;
+  imagesUrl: string;
 }
 
 export interface ChatResponse {
@@ -45,4 +50,39 @@ export interface ChatResponse {
 export interface WaitlistResponse {
   success: boolean;
   message: string;
+}
+
+// Image types
+export interface DocumentImage {
+  id: string;
+  pageNumber: number;
+  imageIndex: number;
+  boundingBox: {
+    topLeftX: number;
+    topLeftY: number;
+    bottomRightX: number;
+    bottomRightY: number;
+  };
+  url: string;
+}
+
+export interface ImagesResponse {
+  totalImages: number;
+  images: DocumentImage[];
+}
+
+export interface PageImagesResponse {
+  pageNumber: number;
+  totalImages: number;
+  images: DocumentImage[];
+}
+
+// OCR Status types
+export interface OCRStatus {
+  status: "processing" | "completed";
+  totalPages?: number;
+  processedAt?: string;
+  hasImages?: boolean;
+  imageCount?: number;
+  message?: string;
 }

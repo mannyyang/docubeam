@@ -264,7 +264,8 @@ documentRoutes.get("/api/documents/:id/ocr/status", async (c: Context<{ Bindings
         status: "completed",
         totalPages: ocrResults.totalPages,
         processedAt: ocrResults.processedAt,
-        hasImages: ocrResults.images.length > 0
+        hasImages: ocrResults.images.length > 0,
+        imageCount: ocrResults.images.length
       }));
     }
     
@@ -283,6 +284,247 @@ documentRoutes.get("/api/documents/:id/ocr/status", async (c: Context<{ Bindings
     }
     
     return c.json(formatErrorResponse("Failed to get OCR status"), 500);
+  }
+});
+
+/**
+ * Get list of extracted images for a document
+ * GET /api/documents/:id/images
+ */
+documentRoutes.get("/api/documents/:id/images", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    
+    // Get OCR results to access image metadata
+    const ocrResults = await DocumentService.getDocumentOCR(documentId, c.env);
+    
+    if (!ocrResults) {
+      return c.json(formatErrorResponse("OCR results not available yet. Please try again later."), 404);
+    }
+    
+    // Return image metadata with URLs
+    const images = ocrResults.images.map((image) => ({
+      id: image.id,
+      pageNumber: image.pageNumber,
+      imageIndex: image.imageIndex,
+      boundingBox: image.boundingBox,
+      url: `/api/documents/${documentId}/images/${image.pageNumber}/${image.imageIndex + 1}`
+    }));
+    
+    return c.json(formatSuccessResponse({
+      totalImages: images.length,
+      images: images
+    }));
+  } catch (error: unknown) {
+    console.error("Get images list error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to get images list"), 500);
+  }
+});
+
+/**
+ * Serve a specific extracted image
+ * GET /api/documents/:id/images/:pageNumber/:imageNumber
+ */
+documentRoutes.get("/api/documents/:id/images/:pageNumber/:imageNumber", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    const pageNumber = parseInt(c.req.param("pageNumber"));
+    const imageNumber = parseInt(c.req.param("imageNumber"));
+    
+    console.log(`🖼️ Serving image: document=${documentId}, page=${pageNumber}, image=${imageNumber}`);
+    
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      return c.json(formatErrorResponse("Invalid page number"), 400);
+    }
+    
+    if (isNaN(imageNumber) || imageNumber < 1) {
+      return c.json(formatErrorResponse("Invalid image number"), 400);
+    }
+    
+    // Check if document exists
+    await DocumentService.getDocument(documentId, c.env);
+    
+    // Construct the image path in R2
+    const pageNumberPadded = pageNumber.toString().padStart(3, '0');
+    const imageNumberPadded = imageNumber.toString().padStart(3, '0');
+    const imagePath = `documents/${documentId}/ocr/images/page-${pageNumberPadded}-img-${imageNumberPadded}.base64`;
+    
+    console.log(`🔍 Looking for image at path: ${imagePath}`);
+    
+    // Get the image from R2
+    const imageObject = await c.env.PDF_BUCKET.get(imagePath);
+    
+    if (!imageObject) {
+      console.log(`❌ Image not found at path: ${imagePath}`);
+      return c.json(formatErrorResponse("Image not found"), 404);
+    }
+    
+    console.log(`✅ Image found, size: ${imageObject.size} bytes`);
+    
+    // Get the base64 data
+    const base64Data = await imageObject.text();
+    console.log(`📄 Base64 data length: ${base64Data.length} characters`);
+    console.log(`📄 Base64 data preview: ${base64Data.substring(0, 100)}...`);
+    
+    try {
+      // Handle different base64 formats
+      let cleanBase64 = base64Data;
+      
+      // Remove data URL prefix if present (e.g., "data:image/png;base64,")
+      if (cleanBase64.includes(',')) {
+        const parts = cleanBase64.split(',');
+        if (parts.length > 1) {
+          cleanBase64 = parts[1];
+          console.log(`🧹 Removed data URL prefix, new length: ${cleanBase64.length}`);
+        }
+      }
+      
+      // Remove all whitespace characters
+      cleanBase64 = cleanBase64.replace(/\s/g, '');
+      console.log(`🧹 Cleaned base64 data length: ${cleanBase64.length} characters`);
+      
+      // Validate base64 format
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
+        console.error(`❌ Invalid base64 format detected`);
+        return c.json(formatErrorResponse("Invalid image data format"), 500);
+      }
+      
+      // Decode base64 to binary
+      let bytes: Uint8Array;
+      try {
+        const binaryString = atob(cleanBase64);
+        bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        console.log(`🔄 Successfully decoded to ${bytes.length} bytes`);
+      } catch (atobError) {
+        console.error(`❌ atob() failed:`, atobError);
+        return c.json(formatErrorResponse("Failed to decode base64 data"), 500);
+      }
+      
+      // Validate that we have actual image data
+      if (bytes.length === 0) {
+        console.error(`❌ Decoded image has 0 bytes`);
+        return c.json(formatErrorResponse("Empty image data"), 500);
+      }
+      
+      // Detect image format from the first few bytes
+      let contentType = "image/png"; // Default
+      let fileExtension = "png";
+      
+      if (bytes.length >= 4) {
+        const header = Array.from(bytes.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join('');
+        console.log(`🔍 Image header bytes: ${header}`);
+        
+        // Check for PNG signature (89 50 4E 47)
+        if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+          contentType = "image/png";
+          fileExtension = "png";
+        }
+        // Check for JPEG signature (FF D8)
+        else if (bytes[0] === 0xFF && bytes[1] === 0xD8) {
+          contentType = "image/jpeg";
+          fileExtension = "jpg";
+        }
+        // Check for WebP signature (52 49 46 46)
+        else if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
+          contentType = "image/webp";
+          fileExtension = "webp";
+        }
+        // Check for GIF signature (47 49 46)
+        else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+          contentType = "image/gif";
+          fileExtension = "gif";
+        }
+        else {
+          console.log(`⚠️ Unknown image format, using PNG as default`);
+        }
+      }
+      
+      console.log(`🎨 Detected content type: ${contentType}`);
+      
+      // Set appropriate headers for image
+      c.header("Content-Type", contentType);
+      c.header("Content-Disposition", `inline; filename="page-${pageNumber}-image-${imageNumber}.${fileExtension}"`);
+      c.header("Content-Length", bytes.length.toString());
+      c.header("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+      c.header("Access-Control-Allow-Origin", "*"); // Allow CORS
+      
+      console.log(`✅ Serving image with ${bytes.length} bytes as ${contentType}`);
+      
+      // Return the image
+      return c.body(bytes);
+      
+    } catch (decodeError) {
+      console.error(`❌ Failed to process image data:`, decodeError);
+      console.error(`❌ Error details:`, {
+        name: decodeError instanceof Error ? decodeError.name : 'Unknown',
+        message: decodeError instanceof Error ? decodeError.message : String(decodeError),
+        stack: decodeError instanceof Error ? decodeError.stack : 'No stack trace'
+      });
+      return c.json(formatErrorResponse("Failed to decode image data"), 500);
+    }
+  } catch (error: unknown) {
+    console.error("Serve image error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to serve image"), 500);
+  }
+});
+
+/**
+ * Get images for a specific page
+ * GET /api/documents/:id/pages/:pageNumber/images
+ */
+documentRoutes.get("/api/documents/:id/pages/:pageNumber/images", async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const documentId = c.req.param("id");
+    const pageNumber = parseInt(c.req.param("pageNumber"));
+    
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      return c.json(formatErrorResponse("Invalid page number"), 400);
+    }
+    
+    // Get OCR results to access image metadata
+    const ocrResults = await DocumentService.getDocumentOCR(documentId, c.env);
+    
+    if (!ocrResults) {
+      return c.json(formatErrorResponse("OCR results not available yet. Please try again later."), 404);
+    }
+    
+    // Filter images for the specific page
+    const pageImages = ocrResults.images
+      .filter(image => image.pageNumber === pageNumber)
+      .map((image) => ({
+        id: image.id,
+        pageNumber: image.pageNumber,
+        imageIndex: image.imageIndex,
+        boundingBox: image.boundingBox,
+        url: `/api/documents/${documentId}/images/${image.pageNumber}/${image.imageIndex + 1}`
+      }));
+    
+    return c.json(formatSuccessResponse({
+      pageNumber: pageNumber,
+      totalImages: pageImages.length,
+      images: pageImages
+    }));
+  } catch (error: unknown) {
+    console.error("Get page images error:", error);
+    
+    if (error instanceof Error && error.name === "NotFoundError") {
+      return c.json(formatErrorResponse(error.message), 404);
+    }
+    
+    return c.json(formatErrorResponse("Failed to get page images"), 500);
   }
 });
 

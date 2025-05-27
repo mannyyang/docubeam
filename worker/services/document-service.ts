@@ -29,6 +29,8 @@ export class DocumentService {
     file: File,
     env: Env
   ): Promise<UploadedDocument> {
+    console.log(`📤 Starting document upload: ${file.name} (${file.size} bytes, ${file.type})`);
+    
     // Validate the file
     if (!file) {
       throw new ValidationError("No file provided");
@@ -36,32 +38,43 @@ export class DocumentService {
     
     // Check file type
     if (!STORAGE_CONFIG.FILE_LIMITS.ACCEPTED_MIME_TYPES.includes(file.type)) {
+      console.error(`❌ Invalid file type: ${file.type}`);
       throw new ValidationError(ERROR_MESSAGES.DOCUMENTS.INVALID_FILE_TYPE);
     }
     
     // Check file size
     if (file.size > STORAGE_CONFIG.FILE_LIMITS.MAX_FILE_SIZE) {
+      console.error(`❌ File too large: ${file.size} bytes (max: ${STORAGE_CONFIG.FILE_LIMITS.MAX_FILE_SIZE})`);
       throw new ValidationError(ERROR_MESSAGES.DOCUMENTS.FILE_TOO_LARGE);
     }
     
     // Generate a document ID
     const documentId = generateUUID();
+    console.log(`📋 Generated document ID: ${documentId}`);
     
     // Create the document path
     const documentPath = createDocumentPath(documentId);
+    console.log(`📁 Document path: ${documentPath}`);
     
     // Upload the file to R2 in the organized structure
+    console.log(`💾 Uploading original file to R2...`);
     const buffer = await file.arrayBuffer();
     await env.PDF_BUCKET.put(`${documentPath}/original/${file.name}`, buffer, {
       httpMetadata: {
         contentType: file.type,
       },
     });
+    console.log(`✅ Original file uploaded to R2: ${documentPath}/original/${file.name}`);
     
-    // Process OCR in the background (async)
-    this.processDocumentOCR(documentId, buffer, env).catch(error => {
-      console.error(`OCR processing failed for document ${documentId}:`, error);
-    });
+    // Process OCR synchronously for debugging
+    console.log(`🚀 Starting synchronous OCR processing for document ${documentId}...`);
+    try {
+      const textUrl = await this.processDocumentOCR(documentId, buffer, env);
+      console.log(`✅ OCR processing completed successfully: ${textUrl}`);
+    } catch (error) {
+      console.error(`❌ OCR processing failed for document ${documentId}:`, error);
+      console.error(`❌ Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    }
     
     // Create the document metadata with initial values
     const document: PDFDocument = {
@@ -74,6 +87,7 @@ export class DocumentService {
     };
     
     // Store the document metadata in R2
+    console.log(`💾 Storing document metadata...`);
     await env.PDF_BUCKET.put(
       `${documentPath}/metadata.json`,
       JSON.stringify(document),
@@ -83,56 +97,104 @@ export class DocumentService {
         },
       }
     );
+    console.log(`✅ Document metadata stored: ${documentPath}/metadata.json`);
     
-    // Generate the document URL (points to the file endpoint)
+    // Generate URLs for the document and extracted results
     const documentUrl = `/api/documents/${documentId}/file`;
+    const textUrl = `/api/documents/${documentId}/text`;
+    const ocrUrl = `/api/documents/${documentId}/ocr`;
+    const statusUrl = `/api/documents/${documentId}/ocr/status`;
+    const imagesUrl = `/api/documents/${documentId}/images`;
     
-    // Return the uploaded document
+    console.log(`🔗 Generated URLs for document ${documentId}:`);
+    console.log(`   📄 File: ${documentUrl}`);
+    console.log(`   📝 Text: ${textUrl}`);
+    console.log(`   🔍 OCR: ${ocrUrl}`);
+    console.log(`   📊 Status: ${statusUrl}`);
+    console.log(`   🖼️ Images: ${imagesUrl}`);
+    
+    console.log(`✅ Document upload completed successfully: ${documentId}`);
+    
+    // Return the uploaded document with all URLs
     return {
       documentId: documentId,
       name: file.name,
       pageCount: 0, // Will be updated after OCR processing
       size: file.size,
       url: documentUrl,
+      textUrl: textUrl,
+      ocrUrl: ocrUrl,
+      statusUrl: statusUrl,
+      imagesUrl: imagesUrl,
     };
   }
 
   /**
-   * Process OCR for a document (async background task)
+   * Process OCR for a document (now synchronous for debugging)
    * @param documentId The document ID
    * @param buffer The PDF buffer
    * @param env Environment variables
+   * @returns Promise that resolves with the text URL when complete
    */
   static async processDocumentOCR(
     documentId: string,
     buffer: ArrayBuffer,
     env: Env
-  ): Promise<void> {
+  ): Promise<string> {
     try {
-      console.log(`Starting OCR processing for document ${documentId}`);
+      console.log(`🔄 Starting OCR processing for document ${documentId}`);
       
       // Extract text using Mistral OCR
+      console.log(`📡 Calling Mistral OCR API...`);
       const ocrResult = await extractTextFromPDF(buffer, env);
+      console.log(`✅ Mistral OCR API call completed`);
       
       // Process the OCR result
+      console.log(`🔄 Processing OCR result...`);
       const processedOCR = processOCRResult(ocrResult);
+      console.log(`✅ OCR result processed`);
       
       // Store OCR results in organized structure
+      console.log(`💾 Storing OCR results to R2...`);
       await storeOCRResults(documentId, processedOCR, env);
+      console.log(`✅ OCR results stored to R2`);
       
       // Update document metadata with page count
+      console.log(`📝 Updating document metadata...`);
       await this.updateDocumentMetadata(documentId, {
         pageCount: processedOCR.totalPages
       }, env);
+      console.log(`✅ Document metadata updated`);
       
-      console.log(`OCR processing completed for document ${documentId}. Pages: ${processedOCR.totalPages}`);
+      // Generate the text URL
+      const textUrl = `/api/documents/${documentId}/text`;
+      
+      console.log(`🎉 OCR processing completed for document ${documentId}. Pages: ${processedOCR.totalPages}`);
+      console.log(`📄 View extracted text: ${textUrl}`);
+      console.log(`🔍 View OCR results: /api/documents/${documentId}/ocr`);
+      console.log(`📊 Check OCR status: /api/documents/${documentId}/ocr/status`);
+      console.log(`🖼️ View images: /api/documents/${documentId}/images`);
+      
+      return textUrl;
     } catch (error) {
-      console.error(`OCR processing failed for document ${documentId}:`, error);
+      console.error(`❌ OCR processing failed for document ${documentId}:`, error);
+      console.error(`❌ Error details:`, {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
       
       // Store error information in metadata
-      await this.updateDocumentMetadata(documentId, {
-        ocrError: error instanceof Error ? error.message : "Unknown OCR error"
-      }, env);
+      try {
+        await this.updateDocumentMetadata(documentId, {
+          ocrError: error instanceof Error ? error.message : "Unknown OCR error"
+        }, env);
+        console.log(`📝 Error information stored in metadata`);
+      } catch (metadataError) {
+        console.error(`❌ Failed to store error in metadata:`, metadataError);
+      }
+      
+      throw error;
     }
   }
 
@@ -148,6 +210,8 @@ export class DocumentService {
     env: Env
   ): Promise<void> {
     try {
+      console.log(`📝 Updating metadata for document ${documentId}...`);
+      
       // Get existing metadata
       const existingDoc = await this.getDocument(documentId, env);
       
@@ -164,8 +228,10 @@ export class DocumentService {
           },
         }
       );
+      
+      console.log(`✅ Metadata updated for document ${documentId}`);
     } catch (error) {
-      console.error(`Failed to update metadata for document ${documentId}:`, error);
+      console.error(`❌ Failed to update metadata for document ${documentId}:`, error);
     }
   }
 

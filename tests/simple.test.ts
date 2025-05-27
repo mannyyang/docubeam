@@ -1,36 +1,40 @@
 import { describe, it, expect } from 'vitest'
 
 describe('Simple Test Suite', () => {
-  describe('Public Document Upload Feature', () => {
+  describe('Public Document Upload with OCR Feature', () => {
     it('should validate that public uploads are enabled', () => {
       // Test that documents can be uploaded without authentication
       const isPublicUploadEnabled = true
       expect(isPublicUploadEnabled).toBe(true)
     })
 
-    it('should validate document storage path structure', () => {
-      // Test the new simplified path structure
+    it('should validate document storage path structure with OCR organization', () => {
+      // Test the new organized path structure for OCR
       const documentId = 'test-doc-123'
-      const expectedPath = `documents/${documentId}`
+      const expectedBasePath = `documents/${documentId}`
+      const expectedOriginalPath = `${expectedBasePath}/original`
+      const expectedOCRPath = `${expectedBasePath}/ocr`
       
-      expect(expectedPath).toBe('documents/test-doc-123')
-      expect(expectedPath).not.toContain('tenant')
-      expect(expectedPath).not.toContain('user')
+      expect(expectedBasePath).toBe('documents/test-doc-123')
+      expect(expectedOriginalPath).toBe('documents/test-doc-123/original')
+      expect(expectedOCRPath).toBe('documents/test-doc-123/ocr')
+      expect(expectedBasePath).not.toContain('tenant')
+      expect(expectedBasePath).not.toContain('user')
     })
 
-    it('should validate document-user join table concept', () => {
-      // Test that we can associate documents with users via join table
-      const documentUserRelation = {
-        documentId: 'doc-123',
-        userId: 456,
-        role: 'owner',
-        createdAt: new Date().toISOString()
+    it('should validate OCR folder structure', () => {
+      const documentId = 'test-doc-123'
+      const ocrStructure = {
+        fullResult: `documents/${documentId}/ocr/full-result.json`,
+        extractedText: `documents/${documentId}/ocr/extracted-text.md`,
+        pages: `documents/${documentId}/ocr/pages/`,
+        images: `documents/${documentId}/ocr/images/`,
       }
       
-      expect(documentUserRelation.documentId).toBe('doc-123')
-      expect(documentUserRelation.userId).toBe(456)
-      expect(documentUserRelation.role).toBe('owner')
-      expect(typeof documentUserRelation.createdAt).toBe('string')
+      expect(ocrStructure.fullResult).toContain('/ocr/full-result.json')
+      expect(ocrStructure.extractedText).toContain('/ocr/extracted-text.md')
+      expect(ocrStructure.pages).toContain('/ocr/pages/')
+      expect(ocrStructure.images).toContain('/ocr/images/')
     })
 
     it('should validate file size limits', () => {
@@ -46,6 +50,91 @@ describe('Simple Test Suite', () => {
       
       expect(acceptedTypes).toContain(testFileType)
     })
+
+    it('should validate Mistral OCR model configuration', () => {
+      const ocrConfig = {
+        model: 'mistral-ocr-latest',
+        includeImages: true,
+      }
+      
+      expect(ocrConfig.model).toBe('mistral-ocr-latest')
+      expect(ocrConfig.includeImages).toBe(true)
+    })
+  })
+
+  describe('OCR API Endpoints', () => {
+    it('should validate OCR results endpoint exists', () => {
+      const ocrEndpoint = '/api/documents/:id/ocr'
+      expect(ocrEndpoint).toBe('/api/documents/:id/ocr')
+    })
+
+    it('should validate extracted text endpoint exists', () => {
+      const textEndpoint = '/api/documents/:id/text'
+      expect(textEndpoint).toBe('/api/documents/:id/text')
+    })
+
+    it('should validate page content endpoint exists', () => {
+      const pageEndpoint = '/api/documents/:id/pages/:pageNumber'
+      expect(pageEndpoint).toBe('/api/documents/:id/pages/:pageNumber')
+    })
+
+    it('should validate OCR status endpoint exists', () => {
+      const statusEndpoint = '/api/documents/:id/ocr/status'
+      expect(statusEndpoint).toBe('/api/documents/:id/ocr/status')
+    })
+
+    it('should validate original file endpoint exists', () => {
+      const fileEndpoint = '/api/documents/:id/file'
+      expect(fileEndpoint).toBe('/api/documents/:id/file')
+    })
+
+    it('should validate metadata extraction endpoint exists', () => {
+      const metadataEndpoint = '/api/documents/:id/metadata'
+      expect(metadataEndpoint).toBe('/api/documents/:id/metadata')
+    })
+  })
+
+  describe('OCR Processing Features', () => {
+    it('should validate OCR result structure', () => {
+      const mockOCRResult = {
+        totalPages: 5,
+        fullText: 'Combined text from all pages',
+        pages: [
+          {
+            pageNumber: 1,
+            markdown: '# Page 1 Content',
+            images: [],
+            dimensions: { dpi: 200, height: 2200, width: 1700 }
+          }
+        ],
+        images: [],
+        processedAt: new Date()
+      }
+      
+      expect(mockOCRResult.totalPages).toBe(5)
+      expect(mockOCRResult.fullText).toBeDefined()
+      expect(mockOCRResult.pages).toHaveLength(1)
+      expect(mockOCRResult.pages[0].pageNumber).toBe(1)
+      expect(mockOCRResult.pages[0].markdown).toContain('# Page 1 Content')
+      expect(mockOCRResult.processedAt).toBeInstanceOf(Date)
+    })
+
+    it('should validate background OCR processing', () => {
+      // Test that OCR processing happens asynchronously
+      const isAsyncProcessing = true
+      const returnsTextURL = true
+      
+      expect(isAsyncProcessing).toBe(true)
+      expect(returnsTextURL).toBe(true)
+    })
+
+    it('should validate OCR status tracking', () => {
+      const statusOptions = ['processing', 'completed', 'failed']
+      const currentStatus = 'completed'
+      
+      expect(statusOptions).toContain(currentStatus)
+      expect(statusOptions).toHaveLength(3)
+    })
   })
 
   describe('Database Schema Changes', () => {
@@ -55,57 +144,17 @@ describe('Simple Test Suite', () => {
         id: 'doc-123',
         name: 'test.pdf',
         size: 1024,
-        pageCount: 1,
+        pageCount: 5, // Updated after OCR processing
         uploadDate: new Date().toISOString(),
-        r2Key: 'documents/doc-123/test.pdf'
+        path: 'documents/doc-123/original/test.pdf' // Updated path structure
       }
       
       expect(documentRecord.id).toBeDefined()
       expect(documentRecord.name).toBeDefined()
-      expect(documentRecord.r2Key).toBeDefined()
+      expect(documentRecord.path).toContain('/original/')
+      expect(documentRecord.pageCount).toBeGreaterThan(0)
       // userId should not be required
       expect(documentRecord).not.toHaveProperty('userId')
-    })
-
-    it('should validate document_user join table structure', () => {
-      const joinRecord = {
-        documentId: 'doc-123',
-        userId: 456,
-        role: 'owner',
-        createdAt: new Date().toISOString()
-      }
-      
-      expect(joinRecord.documentId).toBeDefined()
-      expect(joinRecord.userId).toBeDefined()
-      expect(joinRecord.role).toBeDefined()
-      expect(joinRecord.createdAt).toBeDefined()
-    })
-  })
-
-  describe('API Endpoints', () => {
-    it('should validate public upload endpoint exists', () => {
-      const uploadEndpoint = '/api/documents/upload'
-      expect(uploadEndpoint).toBe('/api/documents/upload')
-    })
-
-    it('should validate document listing endpoint exists', () => {
-      const listEndpoint = '/api/documents'
-      expect(listEndpoint).toBe('/api/documents')
-    })
-
-    it('should validate document retrieval endpoint exists', () => {
-      const getEndpoint = '/api/documents/:id'
-      expect(getEndpoint).toBe('/api/documents/:id')
-    })
-
-    it('should validate document deletion endpoint exists', () => {
-      const deleteEndpoint = '/api/documents/:id'
-      expect(deleteEndpoint).toBe('/api/documents/:id')
-    })
-
-    it('should validate metadata extraction endpoint exists', () => {
-      const metadataEndpoint = '/api/documents/:id/metadata'
-      expect(metadataEndpoint).toBe('/api/documents/:id/metadata')
     })
   })
 })

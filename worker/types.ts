@@ -37,6 +37,10 @@ export interface UploadedDocument {
   pageCount: number;
   size: number;
   url: string;
+  textUrl: string;
+  ocrUrl: string;
+  statusUrl: string;
+  imagesUrl: string;
 }
 
 // Chat types

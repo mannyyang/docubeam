@@ -30,6 +30,7 @@ export const createMockR2Bucket = () => ({
   get: vi.fn().mockResolvedValue({
     arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
     json: vi.fn().mockResolvedValue({}),
+    text: vi.fn().mockResolvedValue(''),
   }),
   delete: vi.fn().mockResolvedValue(undefined),
   list: vi.fn().mockResolvedValue({
@@ -93,7 +94,99 @@ export const createMockPDFBuffer = (): ArrayBuffer => {
   return encoder.encode(pdfHeader).buffer
 }
 
-// Mock Mistral AI response
+// Mock Mistral OCR API response
+export const mockMistralOCRResponse = {
+  pages: [
+    {
+      index: 1,
+      markdown: '# Test Document\n\nThis is a test document with some content.',
+      images: [
+        {
+          id: 'img-001',
+          top_left_x: 100,
+          top_left_y: 200,
+          bottom_right_x: 300,
+          bottom_right_y: 400,
+          image_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+        }
+      ],
+      dimensions: {
+        dpi: 200,
+        height: 2200,
+        width: 1700
+      }
+    },
+    {
+      index: 2,
+      markdown: '## Page 2\n\nThis is the second page of the document.',
+      images: [],
+      dimensions: {
+        dpi: 200,
+        height: 2200,
+        width: 1700
+      }
+    }
+  ],
+  model: 'mistral-ocr-latest',
+  usage_info: {
+    pages_processed: 2,
+    doc_size_bytes: 1024
+  }
+}
+
+// Mock processed OCR result
+export const mockProcessedOCRResult = {
+  totalPages: 2,
+  fullText: '# Test Document\n\nThis is a test document with some content.\n\n## Page 2\n\nThis is the second page of the document.',
+  pages: [
+    {
+      pageNumber: 1,
+      markdown: '# Test Document\n\nThis is a test document with some content.',
+      images: [
+        {
+          id: 'img-001',
+          top_left_x: 100,
+          top_left_y: 200,
+          bottom_right_x: 300,
+          bottom_right_y: 400,
+          image_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+        }
+      ],
+      dimensions: {
+        dpi: 200,
+        height: 2200,
+        width: 1700
+      }
+    },
+    {
+      pageNumber: 2,
+      markdown: '## Page 2\n\nThis is the second page of the document.',
+      images: [],
+      dimensions: {
+        dpi: 200,
+        height: 2200,
+        width: 1700
+      }
+    }
+  ],
+  images: [
+    {
+      id: 'img-001',
+      pageNumber: 1,
+      imageIndex: 0,
+      boundingBox: {
+        topLeftX: 100,
+        topLeftY: 200,
+        bottomRightX: 300,
+        bottomRightY: 400
+      },
+      base64Data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+    }
+  ],
+  processedAt: new Date('2024-01-01T12:00:00Z')
+}
+
+// Mock Mistral AI response (legacy - for backward compatibility)
 export const mockMistralResponse = {
   text: 'This is extracted text from the PDF document.',
 }
@@ -109,3 +202,42 @@ export const mockPDFMetadata = {
   },
   metadata: {},
 }
+
+// Mock OCR status responses
+export const mockOCRStatusProcessing = {
+  status: 'processing',
+  message: 'OCR processing is in progress. Please check back later.'
+}
+
+export const mockOCRStatusCompleted = {
+  status: 'completed',
+  totalPages: 2,
+  processedAt: new Date('2024-01-01T12:00:00Z'),
+  hasImages: true
+}
+
+export const mockOCRStatusFailed = {
+  status: 'failed',
+  error: 'OCR processing failed due to invalid PDF format'
+}
+
+// Helper function to create mock R2 objects for OCR structure
+export const createMockOCRR2Objects = (documentId: string) => [
+  { key: `documents/${documentId}/original/test.pdf` },
+  { key: `documents/${documentId}/metadata.json` },
+  { key: `documents/${documentId}/ocr/full-result.json` },
+  { key: `documents/${documentId}/ocr/extracted-text.md` },
+  { key: `documents/${documentId}/ocr/pages/page-001.md` },
+  { key: `documents/${documentId}/ocr/pages/page-002.md` },
+  { key: `documents/${documentId}/ocr/images/page-001-img-001.base64` },
+]
+
+// Helper function to create mock document with OCR data
+export const createMockDocumentWithOCR = (documentId: string = 'test-doc-id') => ({
+  id: documentId,
+  name: 'test.pdf',
+  size: 1024,
+  pageCount: 2,
+  uploadDate: new Date('2024-01-01'),
+  path: `documents/${documentId}/original/test.pdf`,
+})

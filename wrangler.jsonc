@@ -7,10 +7,10 @@
   "name": "docubeam",
   "main": "worker/index.ts",
   "compatibility_date": "2025-04-03",
-  "assets": {
-    "not_found_handling": "single-page-application",
-    "directory": "./dist"
-  },
+  // "assets": {
+  //   "not_found_handling": "single-page-application",
+  //   "directory": "./dist"
+  // },
   "observability": {
     "enabled": true
   },

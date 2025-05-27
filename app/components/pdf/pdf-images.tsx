@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { DocumentImage, ImagesResponse, APIResponse } from "~/types";
+import { DocumentImage, ImagesResponse, APIResponse } from "../../types";
 import { Eye, Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
 
 interface PDFImagesProps {

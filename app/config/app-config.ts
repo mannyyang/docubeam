@@ -41,7 +41,7 @@ export const FEATURES = {
 
 // Environment-specific configuration
 export const getEnvironmentConfig = () => {
-  const env = import.meta.env.MODE || "development";
+  const env = (typeof window !== 'undefined' ? 'production' : process.env.NODE_ENV) || "development";
   
   const configs = {
     development: {

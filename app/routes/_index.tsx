@@ -1,12 +1,12 @@
 import type { MetaFunction } from "react-router";
-import { LandingLayout } from "../../src/components/layout/landing-layout";
-import { useToast } from "../../src/hooks/use-toast";
-import { ApiService } from "../../src/services/api-service";
-import { HeroSection } from "../../src/components/sections/HeroSection";
-import { ProblemSection } from "../../src/components/sections/ProblemSection";
-import { ValuePropositionSection } from "../../src/components/sections/ValuePropositionSection";
-import { HowItWorksSection } from "../../src/components/sections/HowItWorksSection";
-import { CtaSection } from "../../src/components/sections/CtaSection";
+import { LandingLayout } from "../components/layout/landing-layout";
+import { useToast } from "../hooks/use-toast";
+import { ApiService } from "../services/api-service";
+import { HeroSection } from "../components/sections/HeroSection";
+import { ProblemSection } from "../components/sections/ProblemSection";
+import { ValuePropositionSection } from "../components/sections/ValuePropositionSection";
+import { HowItWorksSection } from "../components/sections/HowItWorksSection";
+import { CtaSection } from "../components/sections/CtaSection";
 
 export const meta: MetaFunction = () => {
   return [

@@ -24,6 +24,7 @@ declare module "react-router" {
 
 // Create React Router request handler
 const reactRouterHandler = createRequestHandler(
+  // @ts-ignore
   () => import("virtual:react-router/server-build"),
   import.meta.env.MODE
 );

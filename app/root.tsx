@@ -7,8 +7,8 @@ import {
   ScrollRestoration,
 } from "react-router";
 import type { MetaFunction } from "react-router";
-import "../src/index.css";
-import { Toaster } from "../src/components/ui/toaster";
+import "./index.css";
+import { Toaster } from "./components/ui/toaster";
 
 export const meta: MetaFunction = () => {
   return [

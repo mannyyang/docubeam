@@ -10,6 +10,7 @@ import healthRoutes from "./routes/health-routes";
 import documentRoutes from "./routes/document-routes";
 import chatRoutes from "./routes/chat-routes";
 import metadataRoutes from "./routes/metadata-routes";
+import fileExplorerRoutes from "./routes/file-explorer-routes";
 import { waitlistRouter } from "./routes/waitlist-routes";
 
 declare module "react-router" {
@@ -41,6 +42,7 @@ apiApp.route("/", healthRoutes);
 apiApp.route("/", documentRoutes);
 apiApp.route("/", chatRoutes);
 apiApp.route("/", metadataRoutes);
+apiApp.route("/", fileExplorerRoutes);
 apiApp.route("/api/waitlist", waitlistRouter);
 
 export default {

@@ -13,16 +13,7 @@ type Pages = {
   "/": {
     params: {};
   };
-  "/documents": {
-    params: {};
-  };
-  "/chat": {
-    params: {};
-  };
-  "/metadata-test": {
-    params: {};
-  };
-  "/metadata-extract": {
+  "/files": {
     params: {};
   };
 };
@@ -30,26 +21,14 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/documents" | "/chat" | "/metadata-test" | "/metadata-extract";
+    page: "/" | "/files";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
     page: "/";
   };
-  "routes/documents.tsx": {
-    id: "routes/documents";
-    page: "/documents";
-  };
-  "routes/chat.tsx": {
-    id: "routes/chat";
-    page: "/chat";
-  };
-  "routes/metadata-test.tsx": {
-    id: "routes/metadata-test";
-    page: "/metadata-test";
-  };
-  "routes/metadata-extract.tsx": {
-    id: "routes/metadata-extract";
-    page: "/metadata-extract";
+  "routes/files.tsx": {
+    id: "routes/files";
+    page: "/files";
   };
 };

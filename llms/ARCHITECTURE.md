@@ -62,6 +62,8 @@ app/
 ├── hooks/               # Custom React hooks
 ├── lib/                 # Utility libraries
 ├── routes/              # React Router routes
+│   ├── _index.tsx       # Landing page
+│   └── files.tsx        # File explorer page
 ├── services/            # API service layer
 └── types/               # TypeScript type definitions
 ```
@@ -71,6 +73,7 @@ app/
 - **Document List**: Grid view of uploaded documents
 - **Chat Interface**: Real-time conversation with AI
 - **Document Viewer**: PDF metadata and content display
+- **File Explorer**: R2 bucket browser with hierarchical navigation and file preview
 
 ### Backend Architecture
 
@@ -80,6 +83,7 @@ worker/
 │   ├── document-routes.ts    # Document CRUD operations
 │   ├── chat-routes.ts        # Chat functionality
 │   ├── metadata-routes.ts    # Document metadata
+│   ├── file-explorer-routes.ts # File explorer API
 │   ├── health-routes.ts      # Health checks
 │   └── waitlist-routes.ts    # Waitlist management
 ├── services/            # Business logic layer
@@ -111,6 +115,16 @@ worker/
 8. Store OCR results in R2: documents/{id}/ocr/
 9. Update metadata with OCR status
 10. Return document URLs to frontend
+```
+
+### File Explorer Flow
+
+```
+1. User navigates to /files → File explorer page
+2. Frontend requests /api/files/tree → Get hierarchical structure
+3. User clicks folder → /api/files/browse?path={path}
+4. User clicks file → /api/files/content?path={path} for preview
+5. User downloads file → /api/files/content?path={path}&download=true
 ```
 
 ### Chat Flow
@@ -158,8 +172,8 @@ documents/
     │   │   ├── page-002.md
     │   │   └── ...
     │   └── images/
-    │       ├── page-001-img-001.png
-    │       ├── page-001-img-002.png
+    │       ├── page-001-img-001.base64  # Extracted images
+    │       ├── page-001-img-002.base64
     │       └── ...
     └── metadata.json               # Document metadata
 ```
@@ -222,6 +236,8 @@ CREATE TABLE waitlist (
 - Organize file structure
 - Generate signed URLs
 - Handle storage cleanup
+- List objects with hierarchical structure
+- Support file explorer operations
 
 ### OCR Processing Service
 **Purpose**: Mistral AI OCR integration
@@ -252,6 +268,7 @@ CREATE TABLE waitlist (
 ### RESTful API Design
 
 ```
+# Document Management
 GET    /api/documents              # List all documents
 POST   /api/documents/upload       # Upload new document
 GET    /api/documents/:id          # Get document metadata
@@ -262,12 +279,53 @@ GET    /api/documents/:id/text     # Get extracted text
 GET    /api/documents/:id/pages/:n # Get specific page content
 GET    /api/documents/:id/ocr/status # Get OCR processing status
 
+# File Explorer
+GET    /api/files/tree             # Get hierarchical file tree
+GET    /api/files/browse           # Browse directory contents
+GET    /api/files/content          # Get file content for preview/download
+GET    /api/files/info             # Get file metadata
+
+# Chat
 POST   /api/chat/message           # Send chat message
 GET    /api/chat/conversations     # List conversations
 GET    /api/chat/messages/:id      # Get conversation messages
 
+# System
 POST   /api/waitlist               # Join waitlist
 GET    /health                     # Health check
+```
+
+### File Explorer API Details
+
+```typescript
+// GET /api/files/tree
+interface FileTreeResponse {
+  tree: FileTreeNode;
+  totalFiles: number;
+  truncated: boolean;
+}
+
+// GET /api/files/browse?path={path}&delimiter={delimiter}
+interface BrowseResponse {
+  path: string;
+  folders: FolderItem[];
+  files: FileItem[];
+  totalItems: number;
+  truncated: boolean;
+}
+
+// GET /api/files/content?path={path}&download={boolean}
+// Returns file content with appropriate headers
+
+// GET /api/files/info?path={path}
+interface FileInfoResponse {
+  key: string;
+  name: string;
+  size: number;
+  lastModified: Date;
+  contentType: string;
+  etag: string;
+}
 ```
 
 ### Response Format
@@ -306,6 +364,7 @@ GET    /health                     # Health check
 - **File Size**: 10MB maximum limit
 - **Content Sanitization**: XSS protection
 - **Rate Limiting**: Cloudflare built-in protection
+- **Path Validation**: Secure file path handling in explorer
 
 ## Performance Architecture
 
@@ -314,12 +373,14 @@ GET    /health                     # Health check
 - **API Responses**: Edge caching for metadata
 - **File Storage**: R2 global distribution
 - **Database**: D1 read replicas
+- **File Explorer**: Cached directory listings
 
 ### Optimization Techniques
 - **Code Splitting**: React lazy loading
 - **Image Optimization**: Cloudflare Image Resizing
 - **Bundle Optimization**: Tree shaking and minification
 - **Edge Computing**: Sub-50ms response times globally
+- **Lazy Loading**: File tree expansion on demand
 
 ### Scalability Considerations
 - **Horizontal Scaling**: Automatic with Cloudflare Workers
@@ -331,14 +392,20 @@ GET    /health                     # Health check
 
 ### Logging Architecture
 - **Structured Logging**: JSON format with correlation IDs
-- **Log Categories**: Upload, OCR, Chat, Route, Error events
+- **Log Categories**: Upload, OCR, Chat, Route, Error, File Explorer events
 - **Log Aggregation**: Cloudflare Analytics and Logs
 - **Real-time Monitoring**: Wrangler tail for development
+
+### File Explorer Logging
+- **[FILE_EXPLORER_START]**: Operation initiation
+- **[FILE_EXPLORER_SUCCESS]**: Successful operations
+- **[FILE_EXPLORER_ERROR]**: Error conditions
+- **[FILE_EXPLORER_NOT_FOUND]**: File not found events
 
 ### Metrics & Analytics
 - **Performance Metrics**: Response times, error rates
 - **Business Metrics**: Upload success rates, OCR completion
-- **User Analytics**: Document usage patterns
+- **User Analytics**: Document usage patterns, file explorer usage
 - **Infrastructure Metrics**: Worker invocations, storage usage
 
 ### Error Handling
@@ -377,6 +444,7 @@ GET    /health                     # Health check
 3. **Document Collaboration**: Multi-user document sharing
 4. **Advanced OCR**: Support for more file types
 5. **Analytics Dashboard**: Usage insights and metrics
+6. **File Explorer Enhancements**: Advanced search, bulk operations
 
 ### Scalability Roadmap
 1. **Microservices**: Split services into separate Workers

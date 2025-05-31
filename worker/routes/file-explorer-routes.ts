@@ -123,13 +123,15 @@ fileExplorerRoutes.get("/api/files/content", async (c: Context<{ Bindings: Env }
     
     // For text-based files, return as text for preview
     if (isTextFile(contentType)) {
-      const text = await (fileObject as any).text();
+      // @ts-ignore - R2Object has text() method but not in types
+      const text = await fileObject.text();
       console.log(`[FILE_EXPLORER_SUCCESS] operation=get_content path=${path} type=text size=${text.length}`);
       return c.text(text);
     }
     
     // For binary files, return as binary
-    const arrayBuffer = await (fileObject as any).arrayBuffer();
+    // @ts-ignore - R2Object has arrayBuffer() method but not in types
+    const arrayBuffer = await fileObject.arrayBuffer();
     console.log(`[FILE_EXPLORER_SUCCESS] operation=get_content path=${path} type=binary size=${arrayBuffer.byteLength}`);
     return c.body(arrayBuffer);
     

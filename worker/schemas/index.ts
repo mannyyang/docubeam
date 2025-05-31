@@ -16,7 +16,8 @@ export const waitlistResponseSchema = z.object({
  * Document schemas
  */
 export const uploadDocumentSchema = z.object({
-  file: z.any(), // This will be validated in the route handler
+  // @ts-ignore - File object validation handled in route handler
+  file: z.unknown(), // This will be validated in the route handler
 });
 
 export const getDocumentSchema = z.object({
@@ -49,7 +50,8 @@ export const getMessagesSchema = z.object({
  */
 export const apiResponseSchema = z.object({
   status: z.enum(["success", "error"]),
-  data: z.any().optional(),
+  // @ts-ignore - Generic data field can be any type
+  data: z.unknown().optional(),
   error: z.string().optional(),
 });
 
